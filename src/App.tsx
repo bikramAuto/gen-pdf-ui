@@ -7,7 +7,7 @@ import AuthModal from './components/AuthModal'
 import SetPassword from './components/SetPassword'
 import { ToastContainer, useToast } from './components/Toast'
 import { User } from './api/users'
-import { createPreferences, updatePreferences, getPreferences, SavedPreference } from './api/preferences'
+import { createTemplate, updateTemplate, getTemplates, getTemplateById, SavedTemplate } from './api/templates'
 import { compressImage, storeImage, deleteImage, getAllHashes } from './utils/imageStorage'
 
 import './styles/global.css'
@@ -65,10 +65,10 @@ export default function App() {
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false)
   const [saveAsName, setSaveAsName] = useState('')
 
-  // Saved Preferences Modal State
-  const [isPrefsModalOpen, setIsPrefsModalOpen] = useState(false)
-  const [savedPrefs, setSavedPrefs] = useState<SavedPreference[]>([])
-  const [isLoadingPrefs, setIsLoadingPrefs] = useState(false)
+  // Saved Templates Modal State
+  const [isTemplatesModalOpen, setIsTemplatesModalOpen] = useState(false)
+  const [savedTemplates, setSavedTemplates] = useState<SavedTemplate[]>([])
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
 
   // Toast
   const { toasts, showToast, dismissToast } = useToast()
@@ -84,16 +84,16 @@ export default function App() {
     else localStorage.removeItem('user')
   }, [user])
 
-  // Preferences State
-  const [preferenceId, setPreferenceId] = useState<string | null>(() => {
-    return localStorage.getItem('preferenceId')
+  // Templates State
+  const [templateId, setTemplateId] = useState<string | null>(() => {
+    return localStorage.getItem('templateId')
   })
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
-    if (preferenceId) localStorage.setItem('preferenceId', preferenceId)
-    else localStorage.removeItem('preferenceId')
-  }, [preferenceId])
+    if (templateId) localStorage.setItem('templateId', templateId)
+    else localStorage.removeItem('templateId')
+  }, [templateId])
 
   const isDragging = useRef(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -122,10 +122,37 @@ export default function App() {
 
   const handleNew = useCallback(() => {
     if (isDirty && !window.confirm('Discard unsaved changes?')) return
+    
+    // Reset Content & Core Info
     setContent('')
     setFileName('Untitled.md')
     setIsDirty(false)
-  }, [isDirty])
+    
+    // Reset App Configs
+    setTheme('light')
+    setSplitPos(50)
+    setShowPDFTimestamp(true)
+    setShowPageNumbers(true)
+    setIsEditorCollapsed(false)
+    
+    // Reset PDF Config
+    setPdfConfig({
+      format: 'a4',
+      orientation: 'portrait',
+      margin: 0.5,
+      headerText: '',
+      footerText: ''
+    })
+    
+    // Reset Banners
+    setHeaderBanner('')
+    setFooterBanner('')
+    
+    // Reset Template Link
+    setTemplateId(null)
+    
+    showToast('Started a new document with default settings', 'success')
+  }, [isDirty, showToast])
 
   const handleOpenClick = useCallback(() => {
     fileInputRef.current?.click()
@@ -282,7 +309,7 @@ export default function App() {
   const handleLogout = useCallback(() => {
     setUser(null)
     localStorage.removeItem('token')
-    setPreferenceId(null)
+    setTemplateId(null)
   }, [])
 
   const buildLayout = useCallback(() => {
@@ -295,20 +322,22 @@ export default function App() {
       showPageNumbers,
       pdfConfig,
       isEditorCollapsed,
+      headerBanner,
+      footerBanner,
     }
-  }, [content, fileName, theme, splitPos, showPDFTimestamp, showPageNumbers, pdfConfig, isEditorCollapsed])
+  }, [content, fileName, theme, splitPos, showPDFTimestamp, showPageNumbers, pdfConfig, isEditorCollapsed, headerBanner, footerBanner])
 
   const handleSave = useCallback(async () => {
     if (!user) return
     setIsSaving(true)
     try {
       const payload = { userId: user.id, layout: buildLayout() }
-      if (preferenceId) {
-        await updatePreferences(preferenceId, payload)
+      if (templateId) {
+        await updateTemplate(templateId, payload)
         showToast('Changes saved successfully!', 'success')
       } else {
-        const res = await createPreferences(user.id, payload)
-        if (res.id) setPreferenceId(res.id)
+        const res = await createTemplate(user.id, payload)
+        if (res.id) setTemplateId(res.id)
         showToast('Saved successfully!', 'success')
       }
       setIsDirty(false)
@@ -318,7 +347,7 @@ export default function App() {
     } finally {
       setIsSaving(false)
     }
-  }, [user, preferenceId, buildLayout])
+  }, [user, templateId, buildLayout, showToast])
 
   const handleSaveAsClick = useCallback(() => {
     if (!user) return
@@ -326,37 +355,63 @@ export default function App() {
     setIsSaveAsModalOpen(true)
   }, [user, fileName])
 
-  const handleOpenPrefs = useCallback(async () => {
+  const handleOpenTemplates = useCallback(async () => {
     if (!user) return
-    setIsPrefsModalOpen(true)
-    setIsLoadingPrefs(true)
+    setIsTemplatesModalOpen(true)
+    setIsLoadingTemplates(true)
     try {
-      const prefs = await getPreferences(user.id)
-      setSavedPrefs(Array.isArray(prefs) ? prefs : [])
+      const result = await getTemplates(user.id) as any
+      // API returns array directly or { data: [...] }
+      const templates = Array.isArray(result) ? result : Array.isArray(result?.data) ? result.data : []
+      setSavedTemplates(templates)
     } catch (err) {
-      console.error('Failed to fetch preferences:', err)
-      showToast('Failed to load saved preferences', 'error')
-      setSavedPrefs([])
+      console.error('Failed to fetch templates:', err)
+      showToast('Failed to load saved templates', 'error')
+      setSavedTemplates([])
     } finally {
-      setIsLoadingPrefs(false)
+      setIsLoadingTemplates(false)
     }
-  }, [user])
+  }, [user, showToast])
 
-  const handleLoadPreference = useCallback((pref: SavedPreference) => {
-    const layout = pref.layout || {}
-    if (layout.content !== undefined) setContent(layout.content)
-    if (layout.fileName) setFileName(layout.fileName)
-    if (layout.theme) setTheme(layout.theme)
-    if (layout.splitPos) setSplitPos(layout.splitPos)
-    if (layout.showPDFTimestamp !== undefined) setShowPDFTimestamp(layout.showPDFTimestamp)
-    if (layout.showPageNumbers !== undefined) setShowPageNumbers(layout.showPageNumbers)
-    if (layout.pdfConfig) setPdfConfig(layout.pdfConfig)
-    if (layout.isEditorCollapsed !== undefined) setIsEditorCollapsed(layout.isEditorCollapsed)
-    setPreferenceId(pref.id)
-    setIsDirty(false)
-    setIsPrefsModalOpen(false)
-    showToast(`Loaded "${pref.name || 'Untitled'}"`, 'success')
-  }, [])
+  const handleLoadTemplate = useCallback(async (pref: SavedTemplate) => {
+    if (!user) return
+    try {
+      const response = await getTemplateById(user.id, pref.id) as any
+
+      // API returns an array — extract first element
+      const fullPref = Array.isArray(response) ? response[0] : (response?.data?.[0] || response?.data || response)
+
+      if (!fullPref) {
+        showToast('Template not found', 'error')
+        return
+      }
+
+      const layout = typeof fullPref.layout === 'string' ? JSON.parse(fullPref.layout) : (fullPref.layout || {})
+
+      // Apply all settings
+      if (layout.content !== undefined) setContent(layout.content)
+      if (layout.fileName) setFileName(layout.fileName)
+      if (layout.theme) setTheme(layout.theme)
+      if (layout.splitPos !== undefined) setSplitPos(layout.splitPos)
+      if (layout.showPDFTimestamp !== undefined) setShowPDFTimestamp(layout.showPDFTimestamp)
+      if (layout.showPageNumbers !== undefined) setShowPageNumbers(layout.showPageNumbers)
+      if (layout.pdfConfig) {
+        const cfg = typeof layout.pdfConfig === 'string' ? JSON.parse(layout.pdfConfig) : layout.pdfConfig
+        setPdfConfig(prev => ({ ...prev, ...cfg }))
+      }
+      if (layout.isEditorCollapsed !== undefined) setIsEditorCollapsed(layout.isEditorCollapsed)
+      if (layout.headerBanner !== undefined) setHeaderBanner(layout.headerBanner)
+      if (layout.footerBanner !== undefined) setFooterBanner(layout.footerBanner)
+
+      setTemplateId(fullPref.id || pref.id)
+      setIsDirty(false)
+      setIsTemplatesModalOpen(false)
+      showToast(`Loaded "${fullPref.name || pref.name || 'Untitled'}"`, 'success')
+    } catch (err) {
+      console.error('Failed to load template:', err)
+      showToast('Failed to load template', 'error')
+    }
+  }, [user, showToast])
 
   const handleSaveAsConfirm = useCallback(async (name: string) => {
     if (!user) return
@@ -364,17 +419,17 @@ export default function App() {
     setIsSaving(true)
     try {
       const payload = { userId: user.id, name, layout: buildLayout() }
-      const res = await createPreferences(user.id, payload)
-      if (res.id) setPreferenceId(res.id)
+      const res = await createTemplate(user.id, payload)
+      if (res.id) setTemplateId(res.id)
       setIsDirty(false)
-      showToast(`"${name}" saved as new preference!`, 'success')
+      showToast(`"${name}" saved as new template!`, 'success')
     } catch (err) {
       console.error('Save As failed:', err)
       showToast(`Save As failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error')
     } finally {
       setIsSaving(false)
     }
-  }, [user, buildLayout])
+  }, [user, buildLayout, showToast])
 
   // Splitter drag logic 
   const onMouseDown = useCallback(() => {
@@ -574,8 +629,8 @@ export default function App() {
             onSave={handleSave}
             onSaveAs={handleSaveAsClick}
             isSaving={isSaving}
-            preferenceId={preferenceId}
-            onOpenPrefs={handleOpenPrefs}
+            templateId={templateId}
+            onOpenTemplates={handleOpenTemplates}
           />
         </div>
         <div
@@ -750,8 +805,8 @@ export default function App() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Save As New</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Choose a name for this preference</p>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Save Template As</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Choose a name for this template</p>
                 </div>
               </div>
               
@@ -760,7 +815,7 @@ export default function App() {
                   type="text"
                   autoFocus
                   className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                  placeholder="My Preference Name"
+                  placeholder="My Template Name"
                   value={saveAsName}
                   onChange={(e) => setSaveAsName(e.target.value)}
                   onKeyDown={(e) => {
@@ -793,10 +848,10 @@ export default function App() {
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
-      {/* Saved Preferences Modal */}
-      {isPrefsModalOpen && (
+      {/* Saved Templates Modal */}
+      {isTemplatesModalOpen && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsPrefsModalOpen(false)} />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsTemplatesModalOpen(false)} />
           <div className="relative w-full max-w-md bg-white dark:bg-[#1e2028] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-6">
               <div className="flex items-center justify-between mb-5">
@@ -807,12 +862,12 @@ export default function App() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Saved Preferences</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Load a previously saved workspace</p>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Saved Templates</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Load a previously saved template</p>
                   </div>
                 </div>
                 <button
-                  onClick={() => setIsPrefsModalOpen(false)}
+                  onClick={() => setIsTemplatesModalOpen(false)}
                   className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -822,7 +877,7 @@ export default function App() {
               </div>
 
               <div className="max-h-[340px] overflow-y-auto -mx-2 px-2 space-y-2">
-                {isLoadingPrefs ? (
+                {isLoadingTemplates ? (
                   <div className="flex flex-col items-center justify-center py-12 text-gray-400 dark:text-gray-500">
                     <svg className="animate-spin h-8 w-8 mb-3" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -830,27 +885,27 @@ export default function App() {
                     </svg>
                     <span className="text-sm font-medium">Loading...</span>
                   </div>
-                ) : savedPrefs.length === 0 ? (
+                ) : savedTemplates.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-gray-400 dark:text-gray-500">
                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3 opacity-50">
                       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
                     </svg>
-                    <span className="text-sm font-medium">No saved preferences yet</span>
-                    <span className="text-xs mt-1">Use Save As to create one</span>
+                    <span className="text-sm font-medium">No saved templates yet</span>
+                    <span className="text-xs mt-1">Use Save Template to create one</span>
                   </div>
                 ) : (
-                  savedPrefs.map((pref) => (
+                  savedTemplates.map((pref) => (
                     <button
                       key={pref.id}
                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left group hover:shadow-md active:scale-[0.98] ${
-                        pref.id === preferenceId
+                        pref.id === templateId
                           ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-500/10'
                           : 'border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02] hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5'
                       }`}
-                      onClick={() => handleLoadPreference(pref)}
+                      onClick={() => handleLoadTemplate(pref)}
                     >
                       <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                        pref.id === preferenceId
+                        pref.id === templateId
                           ? 'bg-blue-500 text-white'
                           : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-500/10 group-hover:text-blue-600 dark:group-hover:text-blue-400'
                       } transition-colors`}>
@@ -867,7 +922,7 @@ export default function App() {
                           {pref.updatedAt ? new Date(pref.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown date'}
                         </p>
                       </div>
-                      {pref.id === preferenceId && (
+                      {pref.id === templateId && (
                         <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-500/15 px-2 py-0.5 rounded-full shrink-0">Active</span>
                       )}
                     </button>

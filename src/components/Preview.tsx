@@ -156,10 +156,31 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
 
     const marginPx = pdfConfig.margin * 96
 
-    // Account for banners and internal paddings (pt-6 + pb-6 = 48px)
-    // We estimate banner space if present to ensure pagination matches reality
-    const bannerEstimate = (headerBanner ? 60 : 0) + (footerBanner ? 60 : 0)
-    const usableHeight = totalHeightPx - marginPx * 2 - 48 - bannerEstimate
+    // Measure actual banner heights for accurate pagination
+    let hHeight = 0
+    let fHeight = 0
+    
+    if (headerBanner || footerBanner) {
+      const tempDiv = document.createElement('div')
+      tempDiv.style.width = measureEl.style.width
+      tempDiv.style.padding = measureEl.style.padding
+      tempDiv.style.position = 'absolute'
+      tempDiv.style.visibility = 'hidden'
+      tempDiv.className = 'prose dark:prose-invert'
+      document.body.appendChild(tempDiv)
+      
+      if (headerBanner) {
+        tempDiv.innerHTML = headerBanner
+        hHeight = tempDiv.offsetHeight + 16 // +16 for mb-4
+      }
+      if (footerBanner) {
+        tempDiv.innerHTML = footerBanner
+        fHeight = tempDiv.offsetHeight + 16 // +16 for mt-4
+      }
+      document.body.removeChild(tempDiv)
+    }
+
+    const usableHeight = totalHeightPx - (marginPx * 2) - 48 - hHeight - fHeight
 
     const pages: string[] = []
 
@@ -329,22 +350,36 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
                 {new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
               </div>
             )}
-            {/* Added a safe container with padding to prevent content from hitting the absolute overlays */}
-            <div className="relative pt-6 pb-6" dangerouslySetInnerHTML={{ __html: pageHtml }} />
+            {/* Content Container */}
+            <div className="relative pt-6 pb-20" dangerouslySetInnerHTML={{ __html: pageHtml }} />
+
             {footerBanner && (
               <div
-                className="w-full mt-4 overflow-hidden"
+                className="absolute left-0 right-0 overflow-hidden"
+                style={{
+                  bottom: `${pdfConfig.margin}in`,
+                  paddingLeft: `${pdfConfig.margin}in`,
+                  paddingRight: `${pdfConfig.margin}in`,
+                }}
                 dangerouslySetInnerHTML={{ __html: footerBanner }}
               />
             )}
+
             {pdfConfig.footerText && (
               <div
-                className="absolute bottom-4 left-0 right-0 text-center text-[10px] text-gray-400 font-mono z-10"
+                className="absolute left-0 right-0 text-center text-[10px] text-gray-400 font-mono z-10"
+                style={{ bottom: `calc(${pdfConfig.margin}in - 20px)` }}
                 dangerouslySetInnerHTML={{ __html: pdfConfig.footerText }}
               />
             )}
             {showPageNumbers && (
-              <div className="absolute bottom-4 right-4 text-[10px] text-gray-400 font-mono z-10">
+              <div 
+                className="absolute right-0 text-[10px] text-gray-400 font-mono z-10"
+                style={{ 
+                  bottom: `calc(${pdfConfig.margin}in - 20px)`,
+                  right: `${pdfConfig.margin}in`
+                }}
+              >
                 {index + 1}/{pagesToRender.length}
               </div>
             )}

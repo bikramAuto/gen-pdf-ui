@@ -35,8 +35,8 @@ interface ToolbarProps {
   onSave: () => void
   onSaveAs: () => void
   isSaving: boolean
-  preferenceId: string | null
-  onOpenPrefs: () => void
+  templateId: string | null
+  onOpenTemplates: () => void
 }
 
 export default function Toolbar({
@@ -72,28 +72,25 @@ export default function Toolbar({
   onSave,
   onSaveAs,
   isSaving,
-  preferenceId,
-  onOpenPrefs,
+  templateId,
+  onOpenTemplates,
 }: ToolbarProps) {
 
-  const [downloadMenuOpen, setDownloadMenuOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [formatOpen, setFormatOpen] = useState(false)
   const [orientOpen, setOrientOpen] = useState(false)
   const [marginOpen, setMarginOpen] = useState(false)
+  const [hubOpen, setHubOpen] = useState(false)
 
-  const downloadMenuRef = useRef<HTMLDivElement>(null)
   const profileMenuRef = useRef<HTMLDivElement>(null)
   const formatRef = useRef<HTMLDivElement>(null)
   const orientRef = useRef<HTMLDivElement>(null)
   const marginRef = useRef<HTMLDivElement>(null)
+  const hubRef = useRef<HTMLDivElement>(null)
 
   // Close menus when clicking outside
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      if (downloadMenuOpen && downloadMenuRef.current && !downloadMenuRef.current.contains(e.target as Node)) {
-        setDownloadMenuOpen(false)
-      }
       if (profileMenuOpen && profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
         setProfileMenuOpen(false)
       }
@@ -106,10 +103,13 @@ export default function Toolbar({
       if (marginOpen && marginRef.current && !marginRef.current.contains(e.target as Node)) {
         setMarginOpen(false)
       }
+      if (hubOpen && hubRef.current && !hubRef.current.contains(e.target as Node)) {
+        setHubOpen(false)
+      }
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
-  }, [downloadMenuOpen, profileMenuOpen, formatOpen, orientOpen, marginOpen])
+  }, [profileMenuOpen, formatOpen, orientOpen, marginOpen, hubOpen])
 
   const btnBase = "flex items-center justify-center gap-1.5 h-9 px-1.5 sm:px-2.5 rounded-lg cursor-pointer border border-transparent bg-transparent text-gray-600 dark:text-gray-400 transition-all hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white active:scale-95 shrink-0"
 
@@ -137,44 +137,111 @@ export default function Toolbar({
           </div>
         </div>
 
-        {/* RIGHT (Download & Profile) */}
-        <div className="flex items-center gap-1 md:gap-2.5 shrink-0 ml-2">
-          <div className="relative" ref={downloadMenuRef}>
+        {/* RIGHT (Actions & Profile) */}
+        <div className="flex items-center gap-1.5 md:gap-3 shrink-0 ml-2">
+          <div className="relative flex items-center" ref={hubRef}>
             <button
-              className="flex items-center gap-1.5 h-8 md:h-9 px-2 md:px-4 rounded-lg font-semibold text-[11px] md:text-[13px] cursor-pointer border-none bg-blue-600 dark:bg-blue-500 text-white transition-all shadow-sm hover:bg-blue-700 dark:hover:bg-blue-400 hover:shadow-md active:scale-95"
-              onClick={() => setDownloadMenuOpen(!downloadMenuOpen)}
-              title="Download options"
+              className={`h-8 md:h-9 px-3 md:px-5 flex items-center gap-2 rounded-lg shadow-sm border-none cursor-pointer font-bold text-[11px] md:text-[13px] transition-all
+                ${templateId
+                  ? 'bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 text-white'
+                  : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 text-white'}
+                ${isSaving ? 'animate-pulse pointer-events-none' : ''}
+                ${!user ? 'opacity-40' : ''}`}
+              onClick={() => setHubOpen(prev => !prev)}
+              disabled={!user || isSaving}
             >
-              <IconDownload />
-              <span className="hidden md:inline">Download</span>
-              <span className="hidden md:block"><IconChevronDown /></span>
+              {isSaving ? (
+                <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              ) : <IconSave />}
+              <span className="hidden sm:inline">Save</span>
+              <span className="sm:hidden text-[10px]">Save</span>
+              <div className="ml-1 opacity-60">
+                <IconChevronDown />
+              </div>
             </button>
 
-            {downloadMenuOpen && (
-              <div className="absolute top-full mt-2 right-0 w-56 bg-white dark:bg-[#1e2028] border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl p-1.5 z-[9999]">
+            {/* THE ACTION HUB DROPDOWN */}
+            {hubOpen && (
+              <div className="absolute top-full mt-2 right-0 w-64 md:w-72 bg-white/95 dark:bg-[#1e2028]/95 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-2xl p-2 z-[100]">
+
+                {/* Section: Download Locally */}
+                <div className="px-3 pt-2 pb-1 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                  <IconDownload size={10} />
+                  Download to computer
+                </div>
                 <button
-                  className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
-                  onClick={() => { onDownload(); setDownloadMenuOpen(false) }}
+                  className="flex items-center gap-3 w-full px-3 py-2 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
+                  onClick={() => { onDownload(); setHubOpen(false) }}
                 >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    <span className="font-bold text-[11px]">MD</span>
+                  <div className="flex items-center justify-center w-9 h-9 rounded-md bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                    <IconFileText />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[13px] font-semibold">Markdown</span>
-                    <span className="text-[11px] text-gray-400 dark:text-gray-500">Save as .md file</span>
+                    <span className="text-[13px] font-semibold">Markdown File</span>
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">Best for further editing</span>
                   </div>
                 </button>
-
                 <button
-                  className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
-                  onClick={() => { onDownloadPDF(); setDownloadMenuOpen(false) }}
+                  className="flex items-center gap-3 w-full px-3 py-2 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
+                  onClick={() => { onDownloadPDF(); setHubOpen(false) }}
                 >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-md bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
                     <IconPDF />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[13px] font-semibold">PDF</span>
-                    <span className="text-[11px] text-gray-400 dark:text-gray-500">Share or print format</span>
+                    <span className="text-[13px] font-semibold">PDF Document</span>
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">Best for sharing or printing</span>
+                  </div>
+                </button>
+
+                <div className="h-px bg-gray-100 dark:bg-gray-800/50 my-2 mx-2" />
+
+                {/* Section: Template Library */}
+                <div className="px-3 pt-1 pb-1 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                  <IconLayout size={10} />
+                  Template Library
+                </div>
+                <button
+                  className="flex items-center gap-3 w-full px-3 py-2 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
+                  onClick={() => { templateId ? onSave() : onSaveAs(); setHubOpen(false) }}
+                >
+                  <div className="flex items-center justify-center w-9 h-9 rounded-md bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                    {templateId ? <IconCloud /> : <IconCopy />}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[13px] font-semibold">
+                      {templateId ? 'Refresh' : 'Snapshot'}
+                    </span>
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">
+                      {templateId ? 'Sync changes to current template' : 'Saves layout as snapshot'}
+                    </span>
+                  </div>
+                </button>
+
+                <div className="h-px bg-gray-100 dark:bg-gray-800/50 my-2 mx-2" />
+
+                {/* Section: Project Content */}
+                <div className="px-3 pt-1 pb-1 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                  <IconFile size={10} />
+                  Project Content
+                </div>
+                <button
+                  className="flex items-center gap-3 w-full px-3 py-2 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
+                  onClick={() => { /* API TODO: link this up when ready */ setHubOpen(false); }}
+                >
+                  <div className="flex items-center justify-center w-9 h-9 rounded-md bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
+                    <IconSave />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[13px] font-semibold">
+                      {templateId ? 'Refresh' : 'Snapshot'}
+                    </span>
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">
+                      {templateId ? 'Sync content to current version' : 'Save content as snapshot'}
+                    </span>
                   </div>
                 </button>
               </div>
@@ -226,17 +293,17 @@ export default function Toolbar({
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Header Text</label>
                   <div className="flex items-center gap-2">
                     <div className="flex flex-col gap-1.5">
-                      <button 
-                        className="text-gray-400 hover:text-blue-500 transition-colors active:scale-95" 
-                        onClick={(e) => { e.stopPropagation(); onUploadHeaderBanner(); }}
+                      <button
+                        className="text-gray-400 hover:text-blue-500 transition-colors active:scale-95"
+                        onClick={() => { onUploadHeaderBanner(); }}
                         title="Upload Header HTML Banner"
                       >
                         <IconHTML size={14} />
                       </button>
                       {hasHeaderBanner && (
-                        <button 
-                          className="text-red-400 hover:text-red-600 transition-colors active:scale-95" 
-                          onClick={(e) => { e.stopPropagation(); onClearHeaderBanner(); }}
+                        <button
+                          className="text-red-400 hover:text-red-600 transition-colors active:scale-95"
+                          onClick={() => { onClearHeaderBanner(); }}
                           title="Remove Header Banner"
                         >
                           <IconX />
@@ -257,17 +324,17 @@ export default function Toolbar({
                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Footer Text</label>
                   <div className="flex items-center gap-2">
                     <div className="flex flex-col gap-1.5">
-                      <button 
-                        className="text-gray-400 hover:text-blue-500 transition-colors active:scale-95" 
-                        onClick={(e) => { e.stopPropagation(); onUploadFooterBanner(); }}
+                      <button
+                        className="text-gray-400 hover:text-blue-500 transition-colors active:scale-95"
+                        onClick={() => { onUploadFooterBanner(); }}
                         title="Upload Footer HTML Banner"
                       >
                         <IconHTML size={14} />
                       </button>
                       {hasFooterBanner && (
-                        <button 
-                          className="text-red-400 hover:text-red-600 transition-colors active:scale-95" 
-                          onClick={(e) => { e.stopPropagation(); onClearFooterBanner(); }}
+                        <button
+                          className="text-red-400 hover:text-red-600 transition-colors active:scale-95"
+                          onClick={() => { onClearFooterBanner(); }}
                           title="Remove Footer Banner"
                         >
                           <IconX />
@@ -315,18 +382,35 @@ export default function Toolbar({
                     </button>
                   </>
                 ) : (
-                  <button
-                    className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-lg cursor-pointer text-red-600 dark:text-red-400 text-left hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors group"
-                    onClick={() => { setProfileMenuOpen(false); onLogout(); }}
-                  >
-                    <div className="flex items-center justify-center w-8 h-8 rounded-md bg-red-50 dark:bg-red-500/5 text-red-500 transition-colors">
-                      <IconSignOut />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[13px] font-semibold">Log Out</span>
-                      <span className="text-[11px] opacity-70">Sign out of session</span>
-                    </div>
-                  </button>
+                  <>
+                    <button
+                      className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
+                      onClick={() => { setProfileMenuOpen(false); onOpenTemplates(); }}
+                    >
+                      <div className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        <IconCloud />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[13px] font-semibold">My Templates</span>
+                        <span className="text-[11px] text-gray-400 dark:text-gray-500">Load saved templates</span>
+                      </div>
+                    </button>
+
+                    <div className="h-px bg-gray-100 dark:bg-gray-700/50 my-1 mx-2" />
+
+                    <button
+                      className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-lg cursor-pointer text-red-600 dark:text-red-400 text-left hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors group"
+                      onClick={() => { setProfileMenuOpen(false); onLogout(); }}
+                    >
+                      <div className="flex items-center justify-center w-8 h-8 rounded-md bg-red-50 dark:bg-red-500/5 text-red-500 transition-colors">
+                        <IconSignOut />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[13px] font-semibold">Log Out</span>
+                        <span className="text-[11px] opacity-70">Sign out of session</span>
+                      </div>
+                    </button>
+                  </>
                 )}
               </div>
             )}
@@ -344,58 +428,27 @@ export default function Toolbar({
             </svg>
           </div>
 
-          <button 
-            className={`${btnBase} hidden md:flex ${isEditorCollapsed ? '!text-blue-600 dark:!text-blue-400 !bg-blue-50 dark:!bg-blue-500/10' : ''}`} 
-            onClick={onToggleEditor} 
+          <button
+            className={`${btnBase} hidden md:flex ${isEditorCollapsed ? '!text-blue-600 dark:!text-blue-400 !bg-blue-50 dark:!bg-blue-500/10' : ''}`}
+            onClick={onToggleEditor}
           >
             <IconSidebar collapsed={isEditorCollapsed} />
           </button>
 
           <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5 hidden md:block" />
 
-          <button className={btnBase} onClick={onNew} title="New file">
+          <button className={btnBase} onClick={onNew} title="New Document">
             <IconNew />
             <span className="hidden lg:inline text-xs font-medium">New</span>
           </button>
 
-          <button className={btnBase} onClick={onOpen} title="Open file">
+          <button className={btnBase} onClick={onOpen} title="Open Locally">
             <IconOpen />
             <span className="hidden lg:inline text-xs font-medium">Open</span>
           </button>
 
-          <button
-            className={`${btnBase} ${!user ? 'opacity-40 cursor-not-allowed' : ''}`}
-            onClick={onOpenPrefs}
-            title={!user ? 'Login required' : 'Open saved preferences'}
-            disabled={!user}
-          >
-            <IconCloud />
-            <span className="hidden lg:inline text-xs font-medium">Saved</span>
-          </button>
-
           <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
 
-          <button
-            className={`${btnBase} ${!user ? 'opacity-40 cursor-not-allowed' : ''} ${isSaving ? 'animate-pulse' : ''}`}
-            onClick={onSave}
-            title={!user ? 'Login required to save' : preferenceId ? 'Save changes' : 'Save new'}
-            disabled={!user || isSaving}
-          >
-            <IconSave />
-            <span className="hidden lg:inline text-xs font-medium">{isSaving ? 'Saving…' : 'Save'}</span>
-          </button>
-
-          <button
-            className={`${btnBase} ${!user ? 'opacity-40 cursor-not-allowed' : ''}`}
-            onClick={onSaveAs}
-            title={!user ? 'Login required' : 'Save as new copy'}
-            disabled={!user || isSaving}
-          >
-            <IconSaveAs />
-            <span className="hidden lg:inline text-xs font-medium">Save As</span>
-          </button>
-
-          <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
 
           <button className={btnBase} onClick={onInsertImage} title="Insert Image">
             <IconImage />
@@ -432,10 +485,10 @@ export default function Toolbar({
 
         {/* Action Controls (Fixed position to prevent clipping) */}
         <div className="flex items-center shrink-0 pr-1 md:pr-0">
-          {/* Mobile Configuration Icons */}
+          {/* Mobile Template Icons */}
           <div className="flex xl:hidden items-center gap-0.5 md:gap-1.5 ml-1">
             <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
-            
+
             {/* Format Icon */}
             <div className="relative" ref={formatRef}>
               <button
@@ -509,8 +562,7 @@ export default function Toolbar({
             </div>
           </div>
 
-          {/* Desktop Configuration Selects */}
-          <div className="hidden xl:flex items-center gap-1.5 ml-1">
+          {/* Desktop Template Selects (Merged into the main flow for desktop) */}   <div className="hidden xl:flex items-center gap-1.5 ml-1">
             <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
             <div className="flex items-center gap-1 bg-gray-100 dark:bg-white/5 rounded-md px-2 py-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Size</span>
@@ -619,8 +671,8 @@ function IconSave() {
 
 function IconCloud() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.5 19c2.5 0 4.5-2 4.5-4.5 0-2.3-1.7-4.1-3.9-4.5-.4-3.5-3.4-6-6.1-6-2.1 0-4 1.4-4.8 3.4-2.1.4-3.7 2.2-3.7 4.5 0 2.5 2 4.5 4.5 4.5h10.5M12 12v6M9 15l3 3 3-3" />
     </svg>
   )
 }
@@ -663,9 +715,9 @@ function IconCheck() {
   )
 }
 
-function IconDownload() {
+function IconDownload({ size = 16 }: { size?: number }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <polyline points="7 10 12 15 17 10" />
       <line x1="12" y1="15" x2="12" y2="3" />
@@ -785,9 +837,9 @@ function IconMargin() {
   )
 }
 
-function IconLayout() {
+function IconLayout({ size = 15 }: { size?: number }) {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
       <line x1="3" y1="9" x2="21" y2="9" />
       <line x1="9" y1="21" x2="9" y2="9" />
@@ -800,6 +852,36 @@ function IconSidebar({ collapsed }: { collapsed?: boolean }) {
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
       {!collapsed && <line x1="9" y1="3" x2="9" y2="21" />}
+    </svg>
+  )
+}
+
+function IconCopy() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  )
+}
+
+function IconFile({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+    </svg>
+  )
+}
+
+function IconFileText() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <line x1="10" y1="9" x2="8" y2="9" />
     </svg>
   )
 }

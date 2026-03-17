@@ -1,7 +1,7 @@
 <div align="center">
   <img src="public/markdown.svg" width="80" height="80" alt="genPdf Logo" />
   <h1>genPdf</h1>
-  <p><strong>A modern, fast, and feature-rich Markdown Editor</strong></p>
+  <p><strong>A modern, professional Markdown Editor with Template Persistence</strong></p>
   <p>
     <a href="https://desktop-markdown-editor.web.app">Live Demo</a> •
     <a href="#key-features">Key Features</a> •
@@ -11,37 +11,57 @@
 
 ---
 
-genPdf is designed for users who need a high-fidelity Markdown writing environment with tight control over physical document layout. Unlike traditional editors, genPdf treats your document as a series of physical pages, ensuring that what you see in the preview is exactly what you get in your PDF export.
+genPdf is a high-fidelity Markdown writing environment designed for professional document creation. It combines the power of VS Code's editor engine with a pixel-perfect physical page layout system, allowing you to save your favorite document configurations as cloud-synced templates.
 
 ## Key Features
 
-- **Real-time WYSIWYG Preview**: Experience GitHub-flavored Markdown rendering as you type, with automatic syntax highlighting for code blocks.
+- **Template Persistence (Cloud Sync)**:
+  - **Save & Load**: Save your entire workspace—content, layout, theme, and PDF configurations—to your account.
+  - **Smart Syncing**: Use one-click "Save" to update existing templates or "Save Template" to create new versions.
+  - **Instant Recovery**: Restore your exact document state (including font settings, margins, and banners) from any device.
+- **User Authentication**:
+  - Secure account creation and login system.
+  - Personalized profile menu to manage your saved templates and session.
+- **Real-time WYSIWYG Preview**: GitHub-flavored Markdown rendering as you type with automatic syntax highlighting.
 - **Physical Page Management**: 
   - **Auto-Pagination**: Automatically splits long content into A4, Letter, or Legal pages.
-  - **Manual Breaks**: Insert `<div class="page-break"></div>` to force content onto a new page.
-  - **Scale-to-Fit**: The preview pane perfectly reflects the physical dimensions and margins of your chosen format.
+  - **Manual Breaks**: Insert precision page breaks to force content onto new pages.
+  - **Pixel-Perfect Scaling**: The preview pane perfectly reflects the physical dimensions and margins of your export.
 - **Advanced PDF Export**:
-  - High-precision rendering that respects system print settings.
-  - Customizable header/footer text with optional automated page numbering.
+  - Customizable header/footer text with automated page numbering.
   - Visual timestamps for document versioning.
-  - Branded experience via custom HTML banners for headers and footers.
+  - Custom HTML banners for repeatable branded headers and footers.
 - **Smart Image Handling**:
-  - **Local Persistence**: Images are compressed and stored in IndexedDB using SHA-256 hashing.
-  - **Optimized Performance**: Small Markdown file sizes as images are referenced by hash rather than embedded as heavy Base64 strings.
-  - **Automated Cleanup**: The application automatically identifies and removes unused image blobs to keep local storage clean.
+  - **Local Persistence**: Images are compressed and stored securely in IndexedDB.
+  - **Performance Optimized**: Tiny Markdown file sizes (images referenced by hash, not Base64).
+  - **Automated Cleanup**: Intelligently purges unused images to optimize local storage.
 
 ## Technical Overview
 
-The application is built with a modern, high-performance stack:
+Built for speed and reliability using a state-of-the-art tech stack:
 
 | Component | Technology |
 | :--- | :--- |
-| **Core** | React 18 + TypeScript |
-| **Editor** | Monaco Editor (VS Code's engine) |
+| **Frontend** | React 18 + TypeScript |
+| **Editor** | Monaco Editor Engine |
+| **Auth & API** | JWT-based Authentication |
 | **Styling** | [Tailwind CSS 4](https://tailwindcss.com/) |
-| **Parsing** | marked.js + highlight.js |
-| **Security** | DOMPurify for HTML sanitization |
-| **Storage** | IndexedDB with SHA-256 hashing for offline image support |
+| **Rendering** | marked.js + highlight.js |
+| **Security** | DOMPurify Sanitization |
+| **Database** | IndexedDB (Images) + REST API (Templates) |
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+```
 
 ## License
 
