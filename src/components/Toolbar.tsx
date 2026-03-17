@@ -213,7 +213,7 @@ export default function Toolbar({
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[13px] font-semibold">
-                      {templateId ? 'Refresh' : 'Snapshot'}
+                      {templateId ? 'Sync' : 'Snapshot'}
                     </span>
                     <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">
                       {templateId ? 'Sync changes to current template' : 'Saves layout as snapshot'}
@@ -237,7 +237,7 @@ export default function Toolbar({
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[13px] font-semibold">
-                      {templateId ? 'Refresh' : 'Snapshot'}
+                      {templateId ? 'Sync' : 'Snapshot'}
                     </span>
                     <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">
                       {templateId ? 'Sync content to current version' : 'Save content as snapshot'}
