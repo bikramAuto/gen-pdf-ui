@@ -32,10 +32,13 @@ interface ToolbarProps {
   onOpenAuth: (mode: 'signin' | 'signup') => void
   user: User | null
   onLogout: () => void
-  onSave: () => void
-  onSaveAs: () => void
+  onSaveDocument: () => void
+  onSaveDocumentSnapshot: () => void
+  onSaveTemplate: () => void
+  onSaveTemplateAs: () => void
   isSaving: boolean
   templateId: string | null
+  documentId: string | null
   onOpenTemplates: () => void
 }
 
@@ -69,10 +72,13 @@ export default function Toolbar({
   onOpenAuth,
   user,
   onLogout,
-  onSave,
-  onSaveAs,
+  onSaveDocument,
+  onSaveDocumentSnapshot,
+  onSaveTemplate,
+  onSaveTemplateAs,
   isSaving,
   templateId,
+  documentId,
   onOpenTemplates,
 }: ToolbarProps) {
 
@@ -142,8 +148,8 @@ export default function Toolbar({
           <div className="relative flex items-center" ref={hubRef}>
             <button
               className={`h-8 md:h-9 px-3 md:px-5 flex items-center gap-2 rounded-lg shadow-sm border-none cursor-pointer font-bold text-[11px] md:text-[13px] transition-all
-                ${templateId
-                  ? 'bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 text-white'
+                ${documentId
+                  ? 'bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-700 text-white'
                   : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 text-white'}
                 ${isSaving ? 'animate-pulse pointer-events-none' : ''}
                 ${!user ? 'opacity-40' : ''}`}
@@ -206,17 +212,17 @@ export default function Toolbar({
                 </div>
                 <button
                   className="flex items-center gap-3 w-full px-3 py-2 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
-                  onClick={() => { templateId ? onSave() : onSaveAs(); setHubOpen(false) }}
+                  onClick={() => { templateId ? onSaveTemplate() : onSaveTemplateAs(); setHubOpen(false) }}
                 >
                   <div className="flex items-center justify-center w-9 h-9 rounded-md bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
                     {templateId ? <IconCloud /> : <IconCopy />}
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[13px] font-semibold">
-                      {templateId ? 'Sync' : 'Snapshot'}
+                      {templateId ? 'Sync Template' : 'Snapshot'}
                     </span>
                     <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">
-                      {templateId ? 'Sync changes to current template' : 'Saves layout as snapshot'}
+                      {templateId ? 'Sync layout changes' : 'Save layout as snapshot'}
                     </span>
                   </div>
                 </button>
@@ -230,17 +236,17 @@ export default function Toolbar({
                 </div>
                 <button
                   className="flex items-center gap-3 w-full px-3 py-2 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
-                  onClick={() => { /* API TODO: link this up when ready */ setHubOpen(false); }}
+                  onClick={() => { onSaveDocument(); setHubOpen(false); }}
                 >
-                  <div className="flex items-center justify-center w-9 h-9 rounded-md bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
-                    <IconSave />
+                  <div className="flex items-center justify-center w-9 h-9 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+                    {documentId ? <IconCloud /> : <IconSave />}
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[13px] font-semibold">
-                      {templateId ? 'Sync' : 'Snapshot'}
+                      {documentId ? 'Sync' : 'Snapshot'}
                     </span>
                     <span className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">
-                      {templateId ? 'Sync content to current version' : 'Save content as snapshot'}
+                      {documentId ? 'Sync your changes' : 'Save a copy or new version'}
                     </span>
                   </div>
                 </button>

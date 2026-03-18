@@ -7,7 +7,8 @@ import AuthModal from './components/AuthModal'
 import SetPassword from './components/SetPassword'
 import { ToastContainer, useToast } from './components/Toast'
 import { User } from './api/users'
-import { createTemplate, updateTemplate, getTemplates, getTemplateById, SavedTemplate } from './api/templates'
+import { createTemplate, updateTemplate, getTemplates, getTemplateById, SavedTemplate, TemplatePayload } from './api/templates'
+import { createDocument, updateDocument, STATUS, DocumentPayload } from './api/documents'
 import { compressImage, storeImage, deleteImage, getAllHashes } from './utils/imageStorage'
 
 import './styles/global.css'
@@ -47,16 +48,16 @@ export default function App() {
   })
   const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor')
   const [isEditorCollapsed, setIsEditorCollapsed] = useState(false)
-  
+
   // Modal State
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false)
   const [tempFileName, setTempFileName] = useState('')
   const [pendingAction, setPendingAction] = useState<'md' | 'pdf' | null>(null)
-  
+
   // Auth Modal State
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
-  
+
   // Banner State
   const [headerBanner, setHeaderBanner] = useState('')
   const [footerBanner, setFooterBanner] = useState('')
@@ -88,12 +89,33 @@ export default function App() {
   const [templateId, setTemplateId] = useState<string | null>(() => {
     return localStorage.getItem('templateId')
   })
+  const [templateName, setTemplateName] = useState<string | null>(() => {
+    return localStorage.getItem('templateName')
+  })
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     if (templateId) localStorage.setItem('templateId', templateId)
     else localStorage.removeItem('templateId')
-  }, [templateId])
+
+    if (templateName) localStorage.setItem('templateName', templateName)
+    else localStorage.removeItem('templateName')
+  }, [templateId, templateName])
+
+  // Document State
+  const [documentId, setDocumentId] = useState<string | null>(() => {
+    return localStorage.getItem('documentId')
+  })
+
+  useEffect(() => {
+    if (documentId) localStorage.setItem('documentId', documentId)
+    else localStorage.removeItem('documentId')
+  }, [documentId])
+
+  // Doc Name Modal State (used for both New and Save)
+  const [isDocNameModalOpen, setIsDocNameModalOpen] = useState(false)
+  const [docNameInput, setDocNameInput] = useState('')
+  const [pendingDocAction, setPendingDocAction] = useState<'new' | 'save' | 'snapshot' | null>(null)
 
   const isDragging = useRef(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -122,37 +144,11 @@ export default function App() {
 
   const handleNew = useCallback(() => {
     if (isDirty && !window.confirm('Discard unsaved changes?')) return
-    
-    // Reset Content & Core Info
-    setContent('')
-    setFileName('Untitled.md')
-    setIsDirty(false)
-    
-    // Reset App Configs
-    setTheme('light')
-    setSplitPos(50)
-    setShowPDFTimestamp(true)
-    setShowPageNumbers(true)
-    setIsEditorCollapsed(false)
-    
-    // Reset PDF Config
-    setPdfConfig({
-      format: 'a4',
-      orientation: 'portrait',
-      margin: 0.5,
-      headerText: '',
-      footerText: ''
-    })
-    
-    // Reset Banners
-    setHeaderBanner('')
-    setFooterBanner('')
-    
-    // Reset Template Link
-    setTemplateId(null)
-    
-    showToast('Started a new document with default settings', 'success')
-  }, [isDirty, showToast])
+    // Prompt for the new document's title before clearing content
+    setDocNameInput('Untitled')
+    setPendingDocAction('new')
+    setIsDocNameModalOpen(true)
+  }, [isDirty])
 
   const handleOpenClick = useCallback(() => {
     fileInputRef.current?.click()
@@ -220,7 +216,7 @@ export default function App() {
     const originalTitle = document.title
     document.title = name
     setFileName(name.toLowerCase().endsWith('.md') ? name : `${name}.md`)
-    
+
     setTimeout(() => {
       window.print()
       // Restore title after print dialog closes (though print is often blocking)
@@ -267,7 +263,7 @@ export default function App() {
     } catch (err) {
       console.error('Image processing failed:', err);
     }
-    
+
     // Reset input so the same file can be re-selected
     e.target.value = ''
   }, [])
@@ -310,6 +306,7 @@ export default function App() {
     setUser(null)
     localStorage.removeItem('token')
     setTemplateId(null)
+    setDocumentId(null)
   }, [])
 
   const buildLayout = useCallback(() => {
@@ -327,27 +324,110 @@ export default function App() {
     }
   }, [content, fileName, theme, splitPos, showPDFTimestamp, showPageNumbers, pdfConfig, isEditorCollapsed, headerBanner, footerBanner])
 
+  const buildTemplateLayout = useCallback(() => {
+    const layout = buildLayout()
+    const { content, fileName, ...templateLayout } = layout as any
+    return templateLayout
+  }, [buildLayout])
+
   const handleSave = useCallback(async () => {
     if (!user) return
+    // Always prompt for document title (allows renaming on every save)
+    setDocNameInput(fileName.replace(/\.md$/i, ''))
+    setPendingDocAction('save')
+    setIsDocNameModalOpen(true)
+  }, [user, fileName])
+
+  const handleDocNameConfirm = useCallback(async (name: string) => {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    const finalFileName = trimmed.endsWith('.md') ? trimmed : `${trimmed}.md`
+    setIsDocNameModalOpen(false)
+
+    if (pendingDocAction === 'new') {
+      // Reset EVERYTHING and start fresh with the chosen name
+      setContent('')
+      setFileName(finalFileName)
+      setDocumentId(null)
+      setTemplateId(null)
+      setTemplateName(null)
+      setIsDirty(false)
+      setTheme('light')
+      setSplitPos(50)
+      setShowPDFTimestamp(true)
+      setShowPageNumbers(true)
+      setIsEditorCollapsed(false)
+      setPdfConfig({ format: 'a4', orientation: 'portrait', margin: 0.5, headerText: '', footerText: '' })
+      setHeaderBanner('')
+      setFooterBanner('')
+      showToast(`Started fresh document "${trimmed}"`, 'success')
+      return
+    }
+
+    if ((pendingDocAction === 'save' || pendingDocAction === 'snapshot') && user) {
+      setFileName(finalFileName)
+      setIsSaving(true)
+      try {
+        const docPayload: DocumentPayload = {
+          userId: user.id,
+          title: trimmed,
+          content: content.endsWith('.md') ? content : content + '.md',
+          layoutId: templateId || '', // reference the current active template
+          status: STATUS.DRAFT,
+        }
+
+        // If snapshot, ALWAYS create new. Otherwise, update if documentId exists.
+        if (documentId && pendingDocAction === 'save') {
+          await updateDocument(user.id, documentId, docPayload)
+        } else {
+          const docRes = await createDocument(user.id, docPayload)
+          if (docRes.id) setDocumentId(docRes.id)
+        }
+
+        setIsDirty(false)
+        showToast(pendingDocAction === 'snapshot' ? 'Document saved as new snapshot!' : 'Document synced!', 'success')
+      } catch (err) {
+        console.error('Save failed:', err)
+        showToast(`Save failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error')
+      } finally {
+        setIsSaving(false)
+      }
+    }
+  }, [pendingDocAction, user, templateId, documentId, content, showToast])
+
+  const handleSaveDocument = useCallback(async () => {
+    if (!user) return
+    // Prompt for title before syncing
+    setDocNameInput(fileName.replace(/\.md$/i, ''))
+    setPendingDocAction('save')
+    setIsDocNameModalOpen(true)
+  }, [user, fileName])
+
+  const handleSaveDocumentSnapshot = useCallback(async () => {
+    if (!user) return
+    // Prompt for a NEW title for the snapshot
+    setDocNameInput(fileName.replace(/\.md$/i, '') + ' Copy')
+    setPendingDocAction('snapshot')
+    setIsDocNameModalOpen(true)
+  }, [user, fileName])
+
+  const handleSaveTemplate = useCallback(async () => {
+    if (!user || !templateId) return
     setIsSaving(true)
     try {
-      const payload = { userId: user.id, layout: buildLayout() }
-      if (templateId) {
-        await updateTemplate(templateId, payload)
-        showToast('Changes saved successfully!', 'success')
-      } else {
-        const res = await createTemplate(user.id, payload)
-        if (res.id) setTemplateId(res.id)
-        showToast('Saved successfully!', 'success')
+      const payload: TemplatePayload = {
+        name: templateName || 'Untitled Template',
+        layout: buildTemplateLayout()
       }
-      setIsDirty(false)
+      await updateTemplate(user.id, templateId, payload)
+      showToast('Template settings synced!', 'success')
     } catch (err) {
-      console.error('Save failed:', err)
-      showToast(`Save failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error')
+      console.error('Template save failed:', err)
+      showToast('Failed to sync template settings', 'error')
     } finally {
       setIsSaving(false)
     }
-  }, [user, templateId, buildLayout, showToast])
+  }, [user, templateId, templateName, buildTemplateLayout, showToast])
 
   const handleSaveAsClick = useCallback(() => {
     if (!user) return
@@ -361,7 +441,6 @@ export default function App() {
     setIsLoadingTemplates(true)
     try {
       const result = await getTemplates(user.id) as any
-      // API returns array directly or { data: [...] }
       const templates = Array.isArray(result) ? result : Array.isArray(result?.data) ? result.data : []
       setSavedTemplates(templates)
     } catch (err) {
@@ -377,8 +456,6 @@ export default function App() {
     if (!user) return
     try {
       const response = await getTemplateById(user.id, pref.id) as any
-
-      // API returns an array — extract first element
       const fullPref = Array.isArray(response) ? response[0] : (response?.data?.[0] || response?.data || response)
 
       if (!fullPref) {
@@ -388,9 +465,7 @@ export default function App() {
 
       const layout = typeof fullPref.layout === 'string' ? JSON.parse(fullPref.layout) : (fullPref.layout || {})
 
-      // Apply all settings
-      if (layout.content !== undefined) setContent(layout.content)
-      if (layout.fileName) setFileName(layout.fileName)
+      // Apply layout settings ONLY. Do NOT overwrite current content or documentId.
       if (layout.theme) setTheme(layout.theme)
       if (layout.splitPos !== undefined) setSplitPos(layout.splitPos)
       if (layout.showPDFTimestamp !== undefined) setShowPDFTimestamp(layout.showPDFTimestamp)
@@ -404,9 +479,9 @@ export default function App() {
       if (layout.footerBanner !== undefined) setFooterBanner(layout.footerBanner)
 
       setTemplateId(fullPref.id || pref.id)
-      setIsDirty(false)
+      setTemplateName(fullPref.name || pref.name || 'Untitled Template')
       setIsTemplatesModalOpen(false)
-      showToast(`Loaded "${fullPref.name || pref.name || 'Untitled'}"`, 'success')
+      showToast(`Applied layout from "${fullPref.name || pref.name || 'Untitled'}"`, 'success')
     } catch (err) {
       console.error('Failed to load template:', err)
       showToast('Failed to load template', 'error')
@@ -418,9 +493,12 @@ export default function App() {
     setIsSaveAsModalOpen(false)
     setIsSaving(true)
     try {
-      const payload = { userId: user.id, name, layout: buildLayout() }
+      const payload: TemplatePayload = { name, layout: buildTemplateLayout() }
       const res = await createTemplate(user.id, payload)
-      if (res.id) setTemplateId(res.id)
+      if (res.id) {
+        setTemplateId(res.id)
+        setTemplateName(name)
+      }
       setIsDirty(false)
       showToast(`"${name}" saved as new template!`, 'success')
     } catch (err) {
@@ -429,7 +507,7 @@ export default function App() {
     } finally {
       setIsSaving(false)
     }
-  }, [user, buildLayout, showToast])
+  }, [user, buildTemplateLayout, showToast])
 
   // Splitter drag logic 
   const onMouseDown = useCallback(() => {
@@ -626,10 +704,13 @@ export default function App() {
             }}
             user={user}
             onLogout={handleLogout}
-            onSave={handleSave}
-            onSaveAs={handleSaveAsClick}
+            onSaveDocument={handleSaveDocument}
+            onSaveDocumentSnapshot={handleSaveDocumentSnapshot}
+            onSaveTemplate={handleSaveTemplate}
+            onSaveTemplateAs={handleSaveAsClick}
             isSaving={isSaving}
             templateId={templateId}
+            documentId={documentId}
             onOpenTemplates={handleOpenTemplates}
           />
         </div>
@@ -639,8 +720,8 @@ export default function App() {
         >
           <div
             className={`print:hidden flex flex-col h-full bg-white dark:bg-[#16181d] shadow-sm relative z-[1] transition-transform duration-300 md:transition-none md:translate-x-0 absolute md:relative w-full md:w-auto ${isEditorCollapsed ? 'md:hidden' : ''}`}
-            style={{ 
-              width: isMobile ? '100%' : `${splitPos}%`, 
+            style={{
+              width: isMobile ? '100%' : `${splitPos}%`,
               transform: isMobile ? (activeTab === 'editor' ? 'translateX(0)' : 'translateX(-100%)') : 'none',
               position: isMobile ? 'absolute' : 'relative',
               left: 0,
@@ -651,16 +732,16 @@ export default function App() {
               value={content}
               onChange={handleChange}
               theme={theme}
-              onMount={(editor) => { 
-                editorRef.current = editor 
-                
+              onMount={(editor) => {
+                editorRef.current = editor
+
                 // Add paste listener for images
                 const container = editor.getDomNode();
                 if (container) {
                   container.addEventListener('paste', async (e: ClipboardEvent) => {
                     const items = e.clipboardData?.items;
                     if (!items) return;
-                    
+
                     for (const item of items) {
                       if (item.type.startsWith('image/')) {
                         const file = item.getAsFile();
@@ -670,7 +751,7 @@ export default function App() {
                             const compressed = await compressImage(file);
                             const hash = await storeImage(compressed);
                             const markdown = `![pasted-image](${hash})`;
-                            
+
                             const selection = editor.getSelection();
                             editor.executeEdits('paste-image', [{
                               range: selection,
@@ -700,8 +781,8 @@ export default function App() {
 
           <div
             className="flex flex-col h-full bg-gray-50 dark:bg-[#0f1115] relative z-[0] transition-transform duration-300 md:transition-none md:translate-x-0 absolute md:relative w-full md:w-auto print:!absolute print:!inset-0 print:!w-full print:!h-auto print:!block print:!transform-none print:z-50 print:bg-white"
-            style={{ 
-              width: isMobile ? '100%' : (isEditorCollapsed ? '100%' : `${100 - splitPos}%`), 
+            style={{
+              width: isMobile ? '100%' : (isEditorCollapsed ? '100%' : `${100 - splitPos}%`),
               transform: isMobile ? (activeTab === 'preview' ? 'translateX(0)' : 'translateX(100%)') : 'none',
               position: isMobile ? 'absolute' : 'relative',
               left: 0,
@@ -736,7 +817,7 @@ export default function App() {
             <div className="p-6">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Save File As</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Choose a name for your document.</p>
-              
+
               <div className="space-y-4">
                 <div className="relative">
                   <input
@@ -783,7 +864,7 @@ export default function App() {
         </div>
       )}
 
-      <AuthModal 
+      <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         initialMode={authMode}
@@ -809,7 +890,7 @@ export default function App() {
                   <p className="text-xs text-gray-500 dark:text-gray-400">Choose a name for this template</p>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <input
                   type="text"
@@ -897,18 +978,16 @@ export default function App() {
                   savedTemplates.map((pref) => (
                     <button
                       key={pref.id}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left group hover:shadow-md active:scale-[0.98] ${
-                        pref.id === templateId
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left group hover:shadow-md active:scale-[0.98] ${pref.id === templateId
                           ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-500/10'
                           : 'border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02] hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5'
-                      }`}
+                        }`}
                       onClick={() => handleLoadTemplate(pref)}
                     >
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                        pref.id === templateId
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${pref.id === templateId
                           ? 'bg-blue-500 text-white'
                           : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-500/10 group-hover:text-blue-600 dark:group-hover:text-blue-400'
-                      } transition-colors`}>
+                        } transition-colors`}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                           <polyline points="14 2 14 8 20 8" />
@@ -928,6 +1007,83 @@ export default function App() {
                     </button>
                   ))
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Doc Name Modal — shown for both New and Save actions */}
+      {isDocNameModalOpen && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsDocNameModalOpen(false)} />
+          <div className="relative w-full max-w-sm bg-white dark:bg-[#1e2028] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                  {pendingDocAction === 'new' ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="12" y1="18" x2="12" y2="12" />
+                      <line x1="9" y1="15" x2="15" y2="15" />
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                    </svg>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    {pendingDocAction === 'new' ? 'Snapshot' : 'Sync'}
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {pendingDocAction === 'new'
+                      ? 'Choose a name for your new document'
+                      : 'Confirm or rename before saving'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="relative">
+                  <input
+                    id="doc-name-input"
+                    type="text"
+                    autoFocus
+                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 pr-14 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+                    placeholder="Document name..."
+                    value={docNameInput}
+                    onChange={(e) => setDocNameInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && docNameInput.trim()) {
+                        handleDocNameConfirm(docNameInput)
+                      }
+                      if (e.key === 'Escape') setIsDocNameModalOpen(false)
+                    }}
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded">
+                    .md
+                  </span>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                    onClick={() => setIsDocNameModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    id="doc-name-confirm-btn"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
+                    disabled={!docNameInput.trim()}
+                    onClick={() => handleDocNameConfirm(docNameInput)}
+                  >
+                    {pendingDocAction === 'new' ? 'Create' : 'Save'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

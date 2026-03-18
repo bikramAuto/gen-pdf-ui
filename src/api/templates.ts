@@ -1,7 +1,6 @@
 import { apiClient } from './client';
 
 export interface TemplatePayload {
-  userId: string;
   name?: string;
   layout: Record<string, any>;
 }
@@ -19,11 +18,18 @@ export const createTemplate = async (id: string, data: TemplatePayload): Promise
   });
 };
 
-export const updateTemplate = async (id: string, data: TemplatePayload): Promise<TemplateResponse> => {
-  return apiClient<TemplateResponse>(`/preferences/update/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  });
+export const updateTemplate = async (
+  userId: string,
+  prefId: string,
+  data: TemplatePayload
+): Promise<TemplateResponse> => {
+  return apiClient<TemplateResponse>(
+    `/preferences/update/${userId}?prefId=${prefId}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }
+  );
 };
 
 export interface SavedTemplate {
