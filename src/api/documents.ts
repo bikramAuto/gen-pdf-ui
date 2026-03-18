@@ -72,3 +72,41 @@ export const updateDocument = async (
     }
   );
 };
+
+export interface DocumentListItem {
+  id: string;
+  title: string;
+}
+
+export interface FullDocument extends SavedDocument {
+  template?: {
+    id: string;
+    name: string;
+    userId: string;
+    layout: Record<string, any>;
+  };
+}
+
+/**
+ * GET /documents/getDoc/:id
+ * Fetches document list or a specific document (if docId provided) for a user.
+ * 
+ * @param userId - The user ID (route param)
+ * @param docId  - (Optional) specific document ID (query param)
+ * @param page   - (Optional) page number (for list)
+ * @param limit  - (Optional) items per page (for list)
+ */
+export const getDocuments = async (
+  userId: string,
+  docId?: string,
+  page: number = 1,
+  limit: number = 20
+): Promise<(DocumentListItem | FullDocument)[]> => {
+  let url = `/documents/getDoc/${userId}?page=${page}&limit=${limit}`;
+  if (docId) {
+    url += `&docId=${docId}`;
+  }
+  return apiClient<(DocumentListItem | FullDocument)[]>(url, {
+    method: 'GET',
+  });
+};

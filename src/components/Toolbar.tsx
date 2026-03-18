@@ -40,6 +40,8 @@ interface ToolbarProps {
   templateId: string | null
   documentId: string | null
   onOpenTemplates: () => void
+  onOpenDocuments: () => void
+  onOpenLayout: () => void
 }
 
 export default function Toolbar({
@@ -80,6 +82,8 @@ export default function Toolbar({
   templateId,
   documentId,
   onOpenTemplates,
+  onOpenDocuments,
+  onOpenLayout,
 }: ToolbarProps) {
 
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
@@ -89,6 +93,7 @@ export default function Toolbar({
   const [hubOpen, setHubOpen] = useState(false)
 
   const profileMenuRef = useRef<HTMLDivElement>(null)
+  const layoutRef = useRef<HTMLDivElement>(null)
   const formatRef = useRef<HTMLDivElement>(null)
   const orientRef = useRef<HTMLDivElement>(null)
   const marginRef = useRef<HTMLDivElement>(null)
@@ -271,15 +276,6 @@ export default function Toolbar({
 
             {profileMenuOpen && (
               <div className="absolute top-full mt-2 right-0 w-64 bg-white dark:bg-[#1e2028] border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl p-1.5 z-[9999]">
-                {user && (
-                  <>
-                    <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800/50 mb-1">
-                      <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-0.5">Account</p>
-                      <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user.name}</p>
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
-                    </div>
-                  </>
-                )}
                 <button
                   className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
                   onClick={() => { onToggleTheme(); }}
@@ -295,69 +291,15 @@ export default function Toolbar({
 
                 <div className="h-px bg-gray-100 dark:bg-gray-700/50 my-1 mx-2" />
 
-                <div className="px-3 py-2">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Header Text</label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex flex-col gap-1.5">
-                      <button
-                        className="text-gray-400 hover:text-blue-500 transition-colors active:scale-95"
-                        onClick={() => { onUploadHeaderBanner(); }}
-                        title="Upload Header HTML Banner"
-                      >
-                        <IconHTML size={14} />
-                      </button>
-                      {hasHeaderBanner && (
-                        <button
-                          className="text-red-400 hover:text-red-600 transition-colors active:scale-95"
-                          onClick={() => { onClearHeaderBanner(); }}
-                          title="Remove Header Banner"
-                        >
-                          <IconX />
-                        </button>
-                      )}
-                    </div>
-                    <input
-                      type="text"
-                      className="flex-1 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-md text-gray-800 dark:text-gray-200 text-xs px-2.5 py-1.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all"
-                      placeholder="e.g. Header Text"
-                      value={pdfConfig.headerText}
-                      onChange={(e) => onUpdatePDFConfig({ headerText: e.target.value })}
-                    />
-                  </div>
+                <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800 mb-2">
+                  <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-0.5">Account</p>
+                  {user && (
+                    <>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user.name}</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                    </>
+                  )}
                 </div>
-
-                <div className="px-3 py-2">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Footer Text</label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex flex-col gap-1.5">
-                      <button
-                        className="text-gray-400 hover:text-blue-500 transition-colors active:scale-95"
-                        onClick={() => { onUploadFooterBanner(); }}
-                        title="Upload Footer HTML Banner"
-                      >
-                        <IconHTML size={14} />
-                      </button>
-                      {hasFooterBanner && (
-                        <button
-                          className="text-red-400 hover:text-red-600 transition-colors active:scale-95"
-                          onClick={() => { onClearFooterBanner(); }}
-                          title="Remove Footer Banner"
-                        >
-                          <IconX />
-                        </button>
-                      )}
-                    </div>
-                    <input
-                      type="text"
-                      className="flex-1 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-md text-gray-800 dark:text-gray-200 text-xs px-2.5 py-1.5 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all"
-                      placeholder="e.g. Footer Text"
-                      value={pdfConfig.footerText}
-                      onChange={(e) => onUpdatePDFConfig({ footerText: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="h-px bg-gray-100 dark:bg-gray-700/50 my-1 mx-2" />
 
                 {!user ? (
                   <>
@@ -398,7 +340,20 @@ export default function Toolbar({
                       </div>
                       <div className="flex flex-col">
                         <span className="text-[13px] font-semibold">My Templates</span>
-                        <span className="text-[11px] text-gray-400 dark:text-gray-500">Load saved templates</span>
+                        <span className="text-[11px] text-gray-400 dark:text-gray-500">Load layout from templates</span>
+                      </div>
+                    </button>
+
+                    <button
+                      className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
+                      onClick={() => { setProfileMenuOpen(false); onOpenDocuments(); }}
+                    >
+                      <div className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                        <IconFile />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[13px] font-semibold">My Documents</span>
+                        <span className="text-[11px] text-gray-400 dark:text-gray-500">Access your saved files</span>
                       </div>
                     </button>
 
@@ -451,6 +406,11 @@ export default function Toolbar({
           <button className={btnBase} onClick={onOpen} title="Open Locally">
             <IconOpen />
             <span className="hidden lg:inline text-xs font-medium">Open</span>
+          </button>
+
+          <button className={btnBase} onClick={onOpenLayout} title="Layout Settings">
+            <IconSettings />
+            <span className="hidden lg:inline text-xs font-medium">Layout</span>
           </button>
 
           <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
@@ -888,6 +848,15 @@ function IconFileText() {
       <line x1="16" y1="13" x2="8" y2="13" />
       <line x1="16" y1="17" x2="8" y2="17" />
       <line x1="10" y1="9" x2="8" y2="9" />
+    </svg>
+  )
+}
+
+function IconSettings() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1V11a2 2 0 0 1-2-2 2 2 0 0 1 2-2v.09a1.65 1.65 0 0 0 1-1.51 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2v-.09a1.65 1.65 0 0 0-1-1.51z" />
     </svg>
   )
 }
