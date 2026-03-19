@@ -10,6 +10,8 @@ import { User } from './api/users'
 import { createTemplate, updateTemplate, getTemplates, getTemplateById, SavedTemplate, TemplatePayload } from './api/templates'
 import { createDocument, updateDocument, STATUS, DocumentPayload, getDocuments, DocumentListItem, FullDocument } from './api/documents'
 import { compressImage, storeImage, deleteImage, getAllHashes } from './utils/imageStorage'
+import { PDFConfig, PDFFormat, PDFOrientation } from './types/pdf'
+import { printPDF } from './utils/pdfUtils'
 
 import './styles/global.css'
 
@@ -17,16 +19,6 @@ const DEFAULT_CONTENT = ``;
 
 type Theme = 'dark' | 'light'
 
-export type PDFFormat = 'letter' | 'a4' | 'legal'
-export type PDFOrientation = 'portrait' | 'landscape'
-
-export interface PDFConfig {
-  format: PDFFormat
-  orientation: PDFOrientation
-  margin: number
-  headerText: string
-  footerText: string
-}
 
 export default function App() {
   const queryParams = new URLSearchParams(window.location.search)
@@ -218,17 +210,8 @@ export default function App() {
   }, [])
 
   const finalizePDFDownload = useCallback((name: string) => {
-    // PDF orientation and format are handled by @page CSS
-    // Browser usually uses document.title as the filename
-    const originalTitle = document.title
-    document.title = name
+    printPDF(name)
     setFileName(name.toLowerCase().endsWith('.md') ? name : `${name}.md`)
-
-    setTimeout(() => {
-      window.print()
-      // Restore title after print dialog closes (though print is often blocking)
-      setTimeout(() => { document.title = originalTitle }, 1000)
-    }, 100)
   }, [])
 
   const handleDownloadPDF = useCallback(() => {

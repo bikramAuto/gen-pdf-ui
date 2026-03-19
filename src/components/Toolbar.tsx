@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import type { User } from '../api/users'
-import type { PDFConfig } from '../App'
+import type { PDFConfig } from '../types/pdf'
 
 interface ToolbarProps {
   theme: 'dark' | 'light'

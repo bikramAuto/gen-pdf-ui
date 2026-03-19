@@ -4,8 +4,9 @@ import DOMPurify from 'dompurify'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css' // Clean, professional theme
 
-import type { PDFConfig } from '../App'
 import { getBlobUrl } from '../utils/imageStorage'
+import { PDFConfig } from '../types/pdf'
+import { calculatePagination, formatHeights, formatWidths } from '../utils/pdfUtils'
 
 // const [isPrintMode, setIsPrintMode] = useState(false)
 
@@ -117,106 +118,25 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
       ADD_ATTR: ['target'],
       FORBID_TAGS: ['style', 'script'],
       ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp|blob):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
-    });
+    }) as string;
   }, [content, hashToUrl])
 
-  // Calculation for page height in pixels
-  const formatHeights: Record<string, number> = {
-    'a4-portrait': 297,
-    'a4-landscape': 210,
-    'letter-portrait': 11 * 25.4,
-    'letter-landscape': 8.5 * 25.4,
-    'legal-portrait': 14 * 25.4,
-    'legal-landscape': 8.5 * 25.4
-  }
-
-  const formatWidths: Record<string, number> = {
-    'a4-portrait': 210,
-    'a4-landscape': 297,
-    'letter-portrait': 8.5 * 25.4,
-    'letter-landscape': 11 * 25.4,
-    'legal-portrait': 8.5 * 25.4,
-    'legal-landscape': 14 * 25.4
-  }
-
-  // Auto-Pagination Logic
   useEffect(() => {
     if (isPrintMode) return
-
 
     const measureEl = hiddenMeasureRef.current
     if (!measureEl) return
 
-    measureEl.innerHTML = fullHtml
-
-    const key = `${pdfConfig.format}-${pdfConfig.orientation}`
-
-    const totalPageHeightMm = formatHeights[key] || 297
-    const totalHeightPx = (totalPageHeightMm * 96) / 25.4
-
-    const marginPx = pdfConfig.margin * 96
-
-    // Measure actual banner heights for accurate pagination
-    let hHeight = 0
-    let fHeight = 0
-    
-    if (headerBanner || footerBanner) {
-      const tempDiv = document.createElement('div')
-      tempDiv.style.width = measureEl.style.width
-      tempDiv.style.padding = measureEl.style.padding
-      tempDiv.style.position = 'absolute'
-      tempDiv.style.visibility = 'hidden'
-      tempDiv.className = 'prose dark:prose-invert'
-      document.body.appendChild(tempDiv)
-      
-      if (headerBanner) {
-        tempDiv.innerHTML = headerBanner
-        hHeight = tempDiv.offsetHeight + 16 // +16 for mb-4
-      }
-      if (footerBanner) {
-        tempDiv.innerHTML = footerBanner
-        fHeight = tempDiv.offsetHeight + 16 // +16 for mt-4
-      }
-      document.body.removeChild(tempDiv)
-    }
-
-    const usableHeight = totalHeightPx - (marginPx * 2) - 48 - hHeight - fHeight
-
-    const pages: string[] = []
-
-    let currentPageHTML = ''
-    let currentHeight = 0
-
-    const elements = Array.from(measureEl.children) as HTMLElement[]
-
-    elements.forEach((el) => {
-
-      // Handle manual page break
-      if (el.classList.contains('page-break')) {
-        if (currentPageHTML !== '') {
-          pages.push(currentPageHTML)
-          currentPageHTML = ''
-          currentHeight = 0
-        }
-        return
-      }
-
-      const elHeight = el.getBoundingClientRect().height
-
-      if (currentHeight + elHeight > usableHeight && currentPageHTML !== '') {
-        pages.push(currentPageHTML)
-        currentPageHTML = ''
-        currentHeight = 0
-      }
-
-      currentPageHTML += el.outerHTML
-      currentHeight += elHeight
+    const pages = calculatePagination({
+      fullHtml,
+      pdfConfig,
+      headerBanner,
+      footerBanner,
+      measureElement: measureEl
     })
 
-    if (currentPageHTML) pages.push(currentPageHTML)
-
     setPaginatedPages(pages)
-  }, [fullHtml, pdfConfig.format, pdfConfig.orientation, pdfConfig.margin])
+  }, [fullHtml, pdfConfig.format, pdfConfig.orientation, pdfConfig.margin, headerBanner, footerBanner, isPrintMode])
 
   // Dynamic Scaling / Center alignment
   useEffect(() => {
@@ -288,7 +208,7 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
     return () => container.removeEventListener('click', handleClick)
   }, [])
 
-  const pagesToRender = paginatedPages.length ? paginatedPages : [fullHtml];
+  const pagesToRender = (paginatedPages.length ? paginatedPages : [fullHtml]) as string[];
 
   return (
     <div className="flex-1 overflow-y-auto overflow-x-auto h-full bg-gray-100 dark:bg-[#0f1115] print:bg-white print:overflow-visible print:h-auto print:block flex flex-col justify-start items-center" ref={wrapperRef}>
@@ -317,7 +237,7 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
         } as any}
       >
 
-        {pagesToRender.map((pageHtml: string, index: number) => (
+        {pagesToRender.map((pageHtml, index) => (
           <div
             key={index + '-' + showPageNumbers + '-' + showPDFTimestamp}
             className="preview-content bg-white dark:bg-[#16181d] shadow-md dark:shadow-xl shrink-0 prose dark:prose-invert !max-w-none break-words print:!shadow-none print:!bg-transparent print:!m-0"
