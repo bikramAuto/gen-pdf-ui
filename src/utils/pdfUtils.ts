@@ -1,6 +1,6 @@
 import { PDFConfig } from '../types/pdf'
 
-// Calculation for page height in pixels
+// ── Page dimension constants (mm) ──────────────────────────────────────────
 export const formatHeights: Record<string, number> = {
   'a4-portrait': 297,
   'a4-landscape': 210,
@@ -19,6 +19,31 @@ export const formatWidths: Record<string, number> = {
   'legal-landscape': 14 * 25.4
 }
 
+// ── Unit conversion helpers (#6) ───────────────────────────────────────────
+const MM_TO_PX = 96 / 25.4
+const INCH_TO_PX = 96
+
+/** Convert mm to px */
+export function mmToPx(mm: number): number {
+  return mm * MM_TO_PX
+}
+
+/** Convert inches to px */
+export function inchToPx(inches: number): number {
+  return inches * INCH_TO_PX
+}
+
+// ── Named layout constants (#7 – replaces magic 48) ───────────────────────
+// These MUST match the Tailwind classes on the content wrapper in Preview.tsx:
+//   <div className="relative pt-6 pb-20" ...>
+const CONTENT_PADDING_TOP_PX = 24   // pt-6 → 1.5rem → 24px
+const CONTENT_PADDING_BOTTOM_PX = 80 // pb-20 → 5rem → 80px
+const CONTENT_PADDING_PX = CONTENT_PADDING_TOP_PX + CONTENT_PADDING_BOTTOM_PX // 104px
+
+// Absorbs subpixel rounding, font metric drift, and minor screen↔print differences
+const SAFETY_BUFFER_PX = 16 // #8
+
+// ── Pagination options ─────────────────────────────────────────────────────
 interface PaginationOptions {
   fullHtml: string
   pdfConfig: PDFConfig
@@ -27,9 +52,72 @@ interface PaginationOptions {
   measureElement: HTMLElement
 }
 
+// ── Font readiness helper (#3) ─────────────────────────────────────────────
+/**
+ * Resolves when all fonts used in the document are loaded and ready.
+ */
+export function waitForFonts(): Promise<FontFaceSet> {
+  return document.fonts.ready
+}
+
+// ── Image readiness helper (#12) ───────────────────────────────────────────
+/**
+ * Waits for every <img> inside `container` to finish loading.
+ */
+export function waitForImages(container: HTMLElement): Promise<void[]> {
+  const imgs = Array.from(container.querySelectorAll('img')) as HTMLImageElement[]
+  return Promise.all(
+    imgs.map(
+      (img) =>
+        new Promise<void>((resolve) => {
+          if (img.complete) return resolve()
+          img.onload = () => resolve()
+          img.onerror = () => resolve() // don't block on broken images
+        })
+    )
+  )
+}
+
+// ── Banner measurement helper (#11) ────────────────────────────────────────
+/**
+ * Measures banner height precisely using offsetHeight + computed margin.
+ * No more "+16 guess".
+ */
+function measureBannerHeight(
+  html: string,
+  referenceEl: HTMLElement,
+  marginClass: 'mb-4' | 'mt-4'
+): number {
+  const tempDiv = document.createElement('div')
+  tempDiv.style.width = referenceEl.style.width
+  tempDiv.style.padding = referenceEl.style.padding
+  tempDiv.style.position = 'absolute'
+  tempDiv.style.visibility = 'hidden'
+  tempDiv.className = 'prose dark:prose-invert'
+
+  // Apply the actual margin class so getComputedStyle returns the real value
+  const inner = document.createElement('div')
+  inner.className = `w-full overflow-hidden ${marginClass}`
+  inner.innerHTML = html
+  tempDiv.appendChild(inner)
+
+  document.body.appendChild(tempDiv)
+  const height = inner.offsetHeight
+  const style = getComputedStyle(inner)
+  const marginTop = parseFloat(style.marginTop) || 0
+  const marginBottom = parseFloat(style.marginBottom) || 0
+  document.body.removeChild(tempDiv)
+
+  return height + marginTop + marginBottom
+}
+
+// ── Core pagination (#1, #4, #7, #8, #13) ─────────────────────────────────
 /**
  * Calculates pagination for HTML content based on PDF configuration.
- * This must be run in an environment with DOM access (the browser).
+ * Must run in a browser environment with DOM access.
+ *
+ * Call `waitForFonts()` and `waitForImages(measureElement)` before this
+ * for accurate results.
  */
 export function calculatePagination({
   fullHtml,
@@ -38,44 +126,42 @@ export function calculatePagination({
   footerBanner,
   measureElement
 }: PaginationOptions): string[] {
-  measureElement.innerHTML = fullHtml
+  // ── Inject HTML into a wrapper matching real page structure (#2, #14)
+  measureElement.innerHTML = `<div class="relative" style="padding-top:${CONTENT_PADDING_TOP_PX}px; padding-bottom:${CONTENT_PADDING_BOTTOM_PX}px">${fullHtml}</div>`
 
+  // The actual elements to paginate are inside the wrapper
+  const wrapper = measureElement.firstElementChild as HTMLElement
+  const elements = Array.from(wrapper.children) as HTMLElement[]
+
+  // ── Page height calculation (#1, #6, #7)
   const key = `${pdfConfig.format}-${pdfConfig.orientation}`
-  const totalPageHeightMm = formatHeights[key] || 297
-  const totalHeightPx = (totalPageHeightMm * 96) / 25.4
-  const marginPx = pdfConfig.margin * 96
+  const totalPageHeightPx = mmToPx(formatHeights[key] || 297)
+  const marginPx = inchToPx(pdfConfig.margin)
 
-  // Measure actual banner heights for accurate pagination
-  let hHeight = 0
-  let fHeight = 0
+  // ── Banner heights (#11)
+  let headerBannerHeight = 0
+  let footerBannerHeight = 0
 
-  if (headerBanner || footerBanner) {
-    const tempDiv = document.createElement('div')
-    tempDiv.style.width = measureElement.style.width
-    tempDiv.style.padding = measureElement.style.padding
-    tempDiv.style.position = 'absolute'
-    tempDiv.style.visibility = 'hidden'
-    tempDiv.className = 'prose dark:prose-invert'
-    document.body.appendChild(tempDiv)
-
-    if (headerBanner) {
-      tempDiv.innerHTML = headerBanner
-      hHeight = tempDiv.offsetHeight + 16 // +16 for mb-4
-    }
-    if (footerBanner) {
-      tempDiv.innerHTML = footerBanner
-      fHeight = tempDiv.offsetHeight + 16 // +16 for mt-4
-    }
-    document.body.removeChild(tempDiv)
+  if (headerBanner) {
+    headerBannerHeight = measureBannerHeight(headerBanner, measureElement, 'mb-4')
+  }
+  if (footerBanner) {
+    footerBannerHeight = measureBannerHeight(footerBanner, measureElement, 'mt-4')
   }
 
-  const usableHeight = totalHeightPx - (marginPx * 2) - 48 - hHeight - fHeight
-  const pages: string[] = []
+  // ── Usable content height per page
+  const usableHeight =
+    totalPageHeightPx
+    - (marginPx * 2)              // top + bottom page margin
+    - CONTENT_PADDING_PX          // pt-6 + pb-20 (named constants, #7)
+    - headerBannerHeight          // precise banner (#11)
+    - footerBannerHeight          // precise banner (#11)
+    - SAFETY_BUFFER_PX            // absorb drift (#8)
 
+  // ── Paginate elements
+  const pages: string[] = []
   let currentPageHTML = ''
   let currentHeight = 0
-
-  const elements = Array.from(measureElement.children) as HTMLElement[]
 
   elements.forEach((el) => {
     // Handle manual page break
@@ -88,7 +174,20 @@ export function calculatePagination({
       return
     }
 
-    const elHeight = el.getBoundingClientRect().height
+    // Use offsetHeight for integer-based stability (#4)
+    const elHeight = el.offsetHeight
+
+    // Handle oversized elements (#13):
+    // If a single element is taller than the page, give it its own page
+    if (elHeight > usableHeight) {
+      if (currentPageHTML !== '') {
+        pages.push(currentPageHTML)
+        currentPageHTML = ''
+        currentHeight = 0
+      }
+      pages.push(el.outerHTML)
+      return
+    }
 
     if (currentHeight + elHeight > usableHeight && currentPageHTML !== '') {
       pages.push(currentPageHTML)
@@ -114,7 +213,6 @@ export function printPDF(name: string): void {
 
   setTimeout(() => {
     window.print()
-    // Restore title after print dialog closes (though print is often blocking)
     setTimeout(() => {
       document.title = originalTitle
     }, 1000)

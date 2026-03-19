@@ -8,13 +8,17 @@
   page-break-before: always;
 }
 
+.prose {
+  line-height: 1.5;
+}
 
 /* Enhancing Tailwind Prose Table styles */
 div.prose table {
   @apply w-full border-collapse border border-gray-300 dark:border-gray-700 my-6;
 }
 
-div.prose th, div.prose td {
+div.prose th,
+div.prose td {
   @apply border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm;
 }
 
@@ -51,7 +55,8 @@ div.prose tr:nth-child(even) {
   @apply mt-4 mb-2 !leading-tight;
 }
 
-.prose ul, .prose ol {
+.prose ul,
+.prose ol {
   @apply my-2;
 }
 
@@ -59,7 +64,7 @@ div.prose tr:nth-child(even) {
   @apply my-0.5;
 }
 
-.prose li > p {
+.prose li>p {
   @apply my-0;
 }
 
@@ -73,4 +78,27 @@ div.prose tr:nth-child(even) {
 
 .prose pre {
   @apply my-4;
+}
+
+/* Break control (#9) — prevent awkward splits inside prose elements */
+.prose p,
+.prose li,
+.prose pre,
+.prose blockquote,
+.prose tr,
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Print line-height consistency (#10) */
+@media print {
+  .prose {
+    line-height: 1.5 !important;
+  }
 }

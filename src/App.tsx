@@ -657,9 +657,15 @@ export default function App() {
             border: none !important;
             background: white !important;
             color: black !important;
+            overflow: hidden !important;
             break-inside: avoid;
             page-break-after: always;
             page-break-inside: avoid;
+          }
+
+          /* Enforce consistent line-height in print (#10) */
+          .prose {
+            line-height: 1.5 !important;
           }
 
           /* Reset prose-invert variables to light mode values during print */

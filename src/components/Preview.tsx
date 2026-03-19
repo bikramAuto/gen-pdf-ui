@@ -6,7 +6,7 @@ import 'highlight.js/styles/github.css' // Clean, professional theme
 
 import { getBlobUrl } from '../utils/imageStorage'
 import { PDFConfig } from '../types/pdf'
-import { calculatePagination, formatHeights, formatWidths } from '../utils/pdfUtils'
+import { calculatePagination, formatHeights, formatWidths, waitForFonts, waitForImages } from '../utils/pdfUtils'
 
 // const [isPrintMode, setIsPrintMode] = useState(false)
 
@@ -121,22 +121,45 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
     }) as string;
   }, [content, hashToUrl])
 
+  // Auto-Pagination: await fonts (#3) and images (#12) before measuring
   useEffect(() => {
     if (isPrintMode) return
 
     const measureEl = hiddenMeasureRef.current
     if (!measureEl) return
 
-    const pages = calculatePagination({
-      fullHtml,
-      pdfConfig,
-      headerBanner,
-      footerBanner,
-      measureElement: measureEl
-    })
+    let cancelled = false
 
-    setPaginatedPages(pages)
+    const run = async () => {
+      // Wait for fonts to load before measuring text (#3)
+      await waitForFonts()
+      if (cancelled) return
+
+      // Inject HTML so images start loading
+      measureEl.innerHTML = fullHtml
+
+      // Wait for all images inside the measure container to load (#12)
+      await waitForImages(measureEl)
+      if (cancelled) return
+
+      const pages = calculatePagination({
+        fullHtml,
+        pdfConfig,
+        headerBanner,
+        footerBanner,
+        measureElement: measureEl
+      })
+
+      if (!cancelled) {
+        setPaginatedPages(pages)
+      }
+    }
+
+    run()
+
+    return () => { cancelled = true }
   }, [fullHtml, pdfConfig.format, pdfConfig.orientation, pdfConfig.margin, headerBanner, footerBanner, isPrintMode])
+
 
   // Dynamic Scaling / Center alignment
   useEffect(() => {
@@ -250,6 +273,7 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
                 : `${formatHeights[`${pdfConfig.format}-landscape`]}mm`,
               padding: `${pdfConfig.margin}in`,
               position: 'relative',
+              overflow: 'hidden',
               pageBreakAfter: index < pagesToRender.length - 1 ? 'always' : 'auto'
             }}
           >
