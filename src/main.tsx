@@ -1,15 +1,16 @@
-import React from 'react'
+import React, { useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import DocsPage from './components/DocsPage'
 import './styles/global.css'
 
 function Root() {
-  const path = window.location.pathname
-  if (path === '/docs' || path === '/docs/') {
-    return <DocsPage />
+  const [view, setView] = useState<'docs' | 'editor'>('docs')
+
+  if (view === 'editor') {
+    return <App onGoToDocs={() => setView('docs')} />
   }
-  return <App />
+  return <DocsPage onGoToEditor={() => setView('editor')} />
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

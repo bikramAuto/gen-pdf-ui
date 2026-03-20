@@ -149,25 +149,25 @@ const FEATURES = [
 ]
 
 const COLOR_MAP: Record<string, { bg: string; text: string; ring: string; dot: string }> = {
-  blue:    { bg: 'bg-blue-500/10',    text: 'text-blue-400',    ring: 'ring-blue-500/20',    dot: 'bg-blue-500' },
-  purple:  { bg: 'bg-purple-500/10',  text: 'text-purple-400',  ring: 'ring-purple-500/20',  dot: 'bg-purple-500' },
-  red:     { bg: 'bg-red-500/10',     text: 'text-red-400',     ring: 'ring-red-500/20',     dot: 'bg-red-500' },
-  teal:    { bg: 'bg-teal-500/10',    text: 'text-teal-400',    ring: 'ring-teal-500/20',    dot: 'bg-teal-500' },
-  amber:   { bg: 'bg-amber-500/10',   text: 'text-amber-400',   ring: 'ring-amber-500/20',   dot: 'bg-amber-500' },
-  green:   { bg: 'bg-green-500/10',   text: 'text-green-400',   ring: 'ring-green-500/20',   dot: 'bg-green-500' },
-  orange:  { bg: 'bg-orange-500/10',  text: 'text-orange-400',  ring: 'ring-orange-500/20',  dot: 'bg-orange-500' },
-  indigo:  { bg: 'bg-indigo-500/10',  text: 'text-indigo-400',  ring: 'ring-indigo-500/20',  dot: 'bg-indigo-500' },
-  cyan:    { bg: 'bg-cyan-500/10',    text: 'text-cyan-400',    ring: 'ring-cyan-500/20',    dot: 'bg-cyan-500' },
-  pink:    { bg: 'bg-pink-500/10',    text: 'text-pink-400',    ring: 'ring-pink-500/20',    dot: 'bg-pink-500' },
-  slate:   { bg: 'bg-slate-500/10',   text: 'text-slate-400',   ring: 'ring-slate-500/20',   dot: 'bg-slate-500' },
-  violet:  { bg: 'bg-violet-500/10',  text: 'text-violet-400',  ring: 'ring-violet-500/20',  dot: 'bg-violet-500' },
-  gray:    { bg: 'bg-gray-500/10',    text: 'text-gray-400',    ring: 'ring-gray-500/20',    dot: 'bg-gray-500' },
+  blue: { bg: 'bg-blue-500/10', text: 'text-blue-400', ring: 'ring-blue-500/20', dot: 'bg-blue-500' },
+  purple: { bg: 'bg-purple-500/10', text: 'text-purple-400', ring: 'ring-purple-500/20', dot: 'bg-purple-500' },
+  red: { bg: 'bg-red-500/10', text: 'text-red-400', ring: 'ring-red-500/20', dot: 'bg-red-500' },
+  teal: { bg: 'bg-teal-500/10', text: 'text-teal-400', ring: 'ring-teal-500/20', dot: 'bg-teal-500' },
+  amber: { bg: 'bg-amber-500/10', text: 'text-amber-400', ring: 'ring-amber-500/20', dot: 'bg-amber-500' },
+  green: { bg: 'bg-green-500/10', text: 'text-green-400', ring: 'ring-green-500/20', dot: 'bg-green-500' },
+  orange: { bg: 'bg-orange-500/10', text: 'text-orange-400', ring: 'ring-orange-500/20', dot: 'bg-orange-500' },
+  indigo: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', ring: 'ring-indigo-500/20', dot: 'bg-indigo-500' },
+  cyan: { bg: 'bg-cyan-500/10', text: 'text-cyan-400', ring: 'ring-cyan-500/20', dot: 'bg-cyan-500' },
+  pink: { bg: 'bg-pink-500/10', text: 'text-pink-400', ring: 'ring-pink-500/20', dot: 'bg-pink-500' },
+  slate: { bg: 'bg-slate-500/10', text: 'text-slate-400', ring: 'ring-slate-500/20', dot: 'bg-slate-500' },
+  violet: { bg: 'bg-violet-500/10', text: 'text-violet-400', ring: 'ring-violet-500/20', dot: 'bg-violet-500' },
+  gray: { bg: 'bg-gray-500/10', text: 'text-gray-400', ring: 'ring-gray-500/20', dot: 'bg-gray-500' },
   emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', ring: 'ring-emerald-500/20', dot: 'bg-emerald-500' },
-  sky:     { bg: 'bg-sky-500/10',     text: 'text-sky-400',     ring: 'ring-sky-500/20',     dot: 'bg-sky-500' },
+  sky: { bg: 'bg-sky-500/10', text: 'text-sky-400', ring: 'ring-sky-500/20', dot: 'bg-sky-500' },
   fuchsia: { bg: 'bg-fuchsia-500/10', text: 'text-fuchsia-400', ring: 'ring-fuchsia-500/20', dot: 'bg-fuchsia-500' },
 }
 
-export default function DocsPage() {
+export default function DocsPage({ onGoToEditor }: { onGoToEditor: () => void }) {
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
 
@@ -207,21 +207,13 @@ export default function DocsPage() {
 
         <div className="relative max-w-6xl mx-auto px-6 pt-12 pb-16">
           <nav className="flex items-center justify-between mb-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/25">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <rect x="2" y="4" width="20" height="16" rx="4" fill="currentColor" opacity="0.3" />
-                  <path d="M6 8h12M6 12h8M6 16h10" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-                </svg>
-              </div>
-              <span className="text-lg font-bold text-white">Gen PDF UI</span>
-            </div>
-            <a
-              href="/"
-              className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold text-gray-300 hover:bg-white/10 hover:text-white transition-all"
+            <span className="text-lg font-bold text-white">BikDocs</span>
+            <button
+              onClick={onGoToEditor}
+              className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold text-gray-300 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
             >
-              ← Back to Editor
-            </a>
+              Editor
+            </button>
           </nav>
 
           <div className="text-center max-w-3xl mx-auto">
@@ -264,11 +256,10 @@ export default function DocsPage() {
             {categories.map((cat) => (
               <button
                 key={cat.label}
-                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all border-none cursor-pointer ${
-                  activeCategory === cat.id
-                    ? 'bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/30'
-                    : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-gray-300'
-                }`}
+                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all border-none cursor-pointer ${activeCategory === cat.id
+                  ? 'bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/30'
+                  : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-gray-300'
+                  }`}
                 onClick={() => setActiveCategory(cat.id)}
               >
                 {cat.label}
@@ -331,15 +322,15 @@ export default function DocsPage() {
       <footer className="border-t border-white/5 py-8 mt-8">
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-gray-600">
-            Gen PDF UI — Desktop Markdown Editor
+            BikDocs — Desktop Markdown Editor
           </p>
           <div className="flex items-center gap-4">
             <a href="https://github.com/bikramAuto/gen-pdf-ui" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
               GitHub
             </a>
-            <a href="/" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
+            <button onClick={onGoToEditor} className="text-xs text-gray-500 hover:text-gray-300 transition-colors cursor-pointer bg-transparent border-none">
               Editor
-            </a>
+            </button>
           </div>
         </div>
       </footer>

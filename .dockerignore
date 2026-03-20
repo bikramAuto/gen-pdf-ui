@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.*
+*.md
+.firebase
+.firebaserc
+firebase.json
+.vscode
+.idea
+*.log
