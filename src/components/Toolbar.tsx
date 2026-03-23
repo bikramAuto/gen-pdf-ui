@@ -23,12 +23,7 @@ interface ToolbarProps {
   onTabChange: (tab: 'editor' | 'preview') => void
   isEditorCollapsed: boolean
   onToggleEditor: () => void
-  onUploadHeaderBanner: () => void
-  onClearHeaderBanner: () => void
-  hasHeaderBanner: boolean
-  onUploadFooterBanner: () => void
-  onClearFooterBanner: () => void
-  hasFooterBanner: boolean
+
   onOpenAuth: (mode: 'signin' | 'signup') => void
   user: User | null
   onLogout: () => void
@@ -65,12 +60,7 @@ export default function Toolbar({
   onTabChange,
   isEditorCollapsed,
   onToggleEditor,
-  onUploadHeaderBanner,
-  onClearHeaderBanner,
-  hasHeaderBanner,
-  onUploadFooterBanner,
-  onClearFooterBanner,
-  hasFooterBanner,
+
   onOpenAuth,
   user,
   onLogout,

@@ -5,7 +5,9 @@ import DocsPage from './components/DocsPage'
 import './styles/global.css'
 
 function Root() {
-  const [view, setView] = useState<'docs' | 'editor'>('docs')
+  // If ?id= is present, go straight to App so SetPassword renders
+  const hasSetPasswordParam = new URLSearchParams(window.location.search).has('id')
+  const [view, setView] = useState<'docs' | 'editor'>(hasSetPasswordParam ? 'editor' : 'docs')
 
   if (view === 'editor') {
     return <App onGoToDocs={() => setView('docs')} />

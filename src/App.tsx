@@ -12,6 +12,7 @@ import { createDocument, updateDocument, STATUS, DocumentPayload, getDocuments, 
 import { compressImage, storeImage, deleteImage, getAllHashes } from './utils/imageStorage'
 import { PDFConfig, PDFFormat, PDFOrientation } from './types/pdf'
 import { printPDF } from './utils/pdfUtils'
+import Modal from './components/ui/Modal'
 
 import './styles/global.css'
 
@@ -24,22 +25,25 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
   const queryParams = new URLSearchParams(window.location.search)
   const isSetPasswordView = queryParams.has('id')
 
-  const [content, setContent] = useState(DEFAULT_CONTENT)
-  const [fileName, setFileName] = useState('Untitled.md')
+  const [content, setContent] = useState(() => localStorage.getItem('editorContent') || DEFAULT_CONTENT)
+  const [fileName, setFileName] = useState(() => localStorage.getItem('editorFileName') || 'Untitled.md')
   const [isDirty, setIsDirty] = useState(false)
-  const [theme, setTheme] = useState<Theme>('light')
-  const [splitPos, setSplitPos] = useState(50)
-  const [showPDFTimestamp, setShowPDFTimestamp] = useState(true)
-  const [showPageNumbers, setShowPageNumbers] = useState(true)
-  const [pdfConfig, setPdfConfig] = useState<PDFConfig>({
-    format: 'a4',
-    orientation: 'portrait',
-    margin: 0.5,
-    headerText: '',
-    footerText: ''
+  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('editorTheme') as Theme) || 'light')
+  const [splitPos, setSplitPos] = useState(() => Number(localStorage.getItem('editorSplitPos')) || 50)
+  const [showPDFTimestamp, setShowPDFTimestamp] = useState(() => localStorage.getItem('editorShowPDFTimestamp') !== 'false')
+  const [showPageNumbers, setShowPageNumbers] = useState(() => localStorage.getItem('editorShowPageNumbers') !== 'false')
+  const [pdfConfig, setPdfConfig] = useState<PDFConfig>(() => {
+    const saved = localStorage.getItem('editorPdfConfig')
+    return saved ? JSON.parse(saved) : {
+      format: 'a4',
+      orientation: 'portrait',
+      margin: 0.5,
+      headerText: '',
+      footerText: ''
+    }
   })
   const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor')
-  const [isEditorCollapsed, setIsEditorCollapsed] = useState(false)
+  const [isEditorCollapsed, setIsEditorCollapsed] = useState(() => localStorage.getItem('editorIsEditorCollapsed') === 'true')
 
   // Modal State
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false)
@@ -51,8 +55,20 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
 
   // Banner State
-  const [headerBanner, setHeaderBanner] = useState('')
-  const [footerBanner, setFooterBanner] = useState('')
+  const [headerBanner, setHeaderBanner] = useState(() => localStorage.getItem('editorHeaderBanner') || '')
+  const [footerBanner, setFooterBanner] = useState(() => localStorage.getItem('editorFooterBanner') || '')
+
+  // Persistence Effects
+  useEffect(() => { localStorage.setItem('editorContent', content) }, [content])
+  useEffect(() => { localStorage.setItem('editorFileName', fileName) }, [fileName])
+  useEffect(() => { localStorage.setItem('editorTheme', theme) }, [theme])
+  useEffect(() => { localStorage.setItem('editorSplitPos', splitPos.toString()) }, [splitPos])
+  useEffect(() => { localStorage.setItem('editorShowPDFTimestamp', showPDFTimestamp.toString()) }, [showPDFTimestamp])
+  useEffect(() => { localStorage.setItem('editorShowPageNumbers', showPageNumbers.toString()) }, [showPageNumbers])
+  useEffect(() => { localStorage.setItem('editorPdfConfig', JSON.stringify(pdfConfig)) }, [pdfConfig])
+  useEffect(() => { localStorage.setItem('editorIsEditorCollapsed', isEditorCollapsed.toString()) }, [isEditorCollapsed])
+  useEffect(() => { localStorage.setItem('editorHeaderBanner', headerBanner) }, [headerBanner])
+  useEffect(() => { localStorage.setItem('editorFooterBanner', footerBanner) }, [footerBanner])
 
   // Save As Modal State
   const [isSaveAsModalOpen, setIsSaveAsModalOpen] = useState(false)
@@ -282,7 +298,6 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
     e.target.value = ''
   }, [])
 
-
   const handleChange = useCallback((value: string) => {
     setContent(value)
     setIsDirty(true)
@@ -336,13 +351,13 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
 
     if (pendingDocAction === 'new') {
       // Reset EVERYTHING and start fresh with the chosen name
-      setContent('')
+      setContent(DEFAULT_CONTENT)
       setFileName(finalFileName)
       setDocumentId(null)
       setTemplateId(null)
       setTemplateName(null)
       setIsDirty(false)
-      setTheme('light')
+      // Note: We deliberately do NOT reset 'theme' as per user request
       setSplitPos(50)
       setShowPDFTimestamp(true)
       setShowPageNumbers(true)
@@ -350,6 +365,14 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
       setPdfConfig({ format: 'a4', orientation: 'portrait', margin: 0.5, headerText: '', footerText: '' })
       setHeaderBanner('')
       setFooterBanner('')
+
+      // Clear related localStorage items to ensure clean state
+      localStorage.removeItem('editorContent')
+      localStorage.setItem('editorFileName', finalFileName)
+      localStorage.removeItem('documentId')
+      localStorage.removeItem('templateId')
+      localStorage.removeItem('templateName')
+
       showToast(`Started fresh document "${trimmed}"`, 'success')
       return
     }
@@ -475,7 +498,7 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
       if (fullDoc.template) {
         const template = fullDoc.template
         const layout = typeof template.layout === 'string' ? JSON.parse(template.layout) : template.layout
-        
+
         if (layout.theme) setTheme(layout.theme)
         if (layout.splitPos !== undefined) setSplitPos(layout.splitPos)
         if (layout.showPDFTimestamp !== undefined) setShowPDFTimestamp(layout.showPDFTimestamp)
@@ -625,8 +648,53 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
   }
 
   return (
-    <div className="h-screen bg-gray-50 dark:bg-[#0f1115] text-gray-900 dark:text-gray-100 font-ui font-antialiased print:h-auto print:overflow-visible print:bg-white">
+    <div className={`h-screen ${theme === 'dark' ? 'bg-[#0b0d12] bg-gradient-to-b from-[#0b0d12] to-[#0a0b0f]' : 'bg-gray-50'} text-gray-900 dark:text-gray-100 font-ui font-antialiased print:h-auto print:overflow-visible print:bg-white relative overflow-hidden`}>
+      {/* Subtle Noise Texture Overlay */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] z-[99999]" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
+
       <style>{`
+        @keyframes modalEnter {
+          from { opacity: 0; transform: scale(0.98) translateY(4px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-modal-enter {
+          animation: modalEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        /* Linear-Tier Design System */
+        :root {
+          --zinc-50: #fafafa;
+          --zinc-100: #f4f4f5;
+          --zinc-200: #e4e4e7;
+          --zinc-300: #d4d4d8;
+          --zinc-400: #a1a1aa;
+          --zinc-500: #71717a;
+          --zinc-600: #52525b;
+          --zinc-700: #3f3f46;
+          --zinc-800: #27272a;
+          --zinc-900: #18181b;
+          --zinc-950: #09090b;
+        }
+
+        .font-ui {
+          font-feature-settings: 'cv02', 'cv03', 'cv04', 'ss01';
+          letter-spacing: -0.01em;
+        }
+
+        .premium-input {
+          @apply bg-zinc-100/5 dark:bg-white/[0.02] border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-[13px] font-medium text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-900/10 dark:focus:ring-white/10 focus:border-zinc-900/30 dark:focus:border-white/30 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200;
+        }
+
+        .premium-button-primary {
+          @apply bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 px-5 py-2 rounded-xl text-[13px] font-semibold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-sm;
+        }
+
+        .premium-button-secondary {
+          @apply bg-transparent text-zinc-500 dark:text-zinc-400 px-5 py-2 rounded-xl text-[13px] font-medium transition-all hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 active:scale-[0.98];
+        }
+
+
+
         @page {
           size: ${pdfConfig.format} ${pdfConfig.orientation};
           margin: 0 !important;
@@ -711,20 +779,7 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
           accept="image/*"
           onChange={handleImageSelected}
         />
-        <input
-          type="file"
-          ref={headerBannerInputRef}
-          style={{ display: 'none' }}
-          accept=".html,.htm"
-          onChange={handleHeaderBannerSelected}
-        />
-        <input
-          type="file"
-          ref={footerBannerInputRef}
-          style={{ display: 'none' }}
-          accept=".html,.htm"
-          onChange={handleFooterBannerSelected}
-        />
+
 
         <div className="print:hidden">
           <Toolbar
@@ -748,12 +803,7 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
             onTabChange={setActiveTab}
             isEditorCollapsed={isEditorCollapsed}
             onToggleEditor={() => setIsEditorCollapsed(!isEditorCollapsed)}
-            onUploadHeaderBanner={() => headerBannerInputRef.current?.click()}
-            onClearHeaderBanner={() => setHeaderBanner('')}
-            hasHeaderBanner={!!headerBanner}
-            onUploadFooterBanner={() => footerBannerInputRef.current?.click()}
-            onClearFooterBanner={() => setFooterBanner('')}
-            hasFooterBanner={!!footerBanner}
+
             onOpenAuth={(mode: 'signin' | 'signup') => {
               setAuthMode(mode)
               setIsAuthModalOpen(true)
@@ -867,60 +917,51 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
         </div>
       </div>
 
-      {/* Rename Modal */}
-      {isRenameModalOpen && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsRenameModalOpen(false)} />
-          <div className="relative w-full max-w-sm bg-white dark:bg-[#1e2028] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Save File As</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Choose a name for your document.</p>
+      {/* Rename Modal: Glass Style */}
+      {/* Rename Modal: Glass Style */}
+      <Modal isOpen={isRenameModalOpen} onClose={() => setIsRenameModalOpen(false)} maxWidthClass="max-w-[360px]" zIndex={10001}>
+        <h3 className="text-[16px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1 tracking-tight">Rename document</h3>
+        <p className="text-[13px] text-zinc-500 dark:text-zinc-400 mb-6 font-medium">Choose a new name for your file.</p>
 
-              <div className="space-y-4">
-                <div className="relative">
-                  <input
-                    type="text"
-                    autoFocus
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                    placeholder="Enter filename..."
-                    value={tempFileName}
-                    onChange={(e) => setTempFileName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        if (pendingAction === 'md') finalizeMDDownload(tempFileName)
-                        else if (pendingAction === 'pdf') finalizePDFDownload(tempFileName)
-                        setIsRenameModalOpen(false)
-                      }
-                    }}
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded">
-                    {pendingAction === 'md' ? '.md' : '.pdf'}
-                  </span>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                    onClick={() => setIsRenameModalOpen(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all"
-                    onClick={() => {
-                      if (pendingAction === 'md') finalizeMDDownload(tempFileName)
-                      else if (pendingAction === 'pdf') finalizePDFDownload(tempFileName)
-                      setIsRenameModalOpen(false)
-                    }}
-                  >
-                    Download
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="relative mb-6">
+          <input
+            type="text"
+            className="premium-input w-full pr-12 font-medium"
+            value={tempFileName}
+            onChange={(e) => setTempFileName(e.target.value)}
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                if (pendingAction === 'md') finalizeMDDownload(tempFileName)
+                else if (pendingAction === 'pdf') finalizePDFDownload(tempFileName)
+                setIsRenameModalOpen(false)
+              }
+            }}
+          />
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+            {pendingAction === 'md' ? '.md' : '.pdf'}
+          </span>
         </div>
-      )}
+
+        <div className="flex justify-end gap-2">
+          <button
+            className="premium-button-secondary"
+            onClick={() => setIsRenameModalOpen(false)}
+          >
+            Cancel
+          </button>
+          <button
+            className="premium-button-primary"
+            onClick={() => {
+              if (pendingAction === 'md') finalizeMDDownload(tempFileName)
+              else if (pendingAction === 'pdf') finalizePDFDownload(tempFileName)
+              setIsRenameModalOpen(false)
+            }}
+          >
+            Rename
+          </button>
+        </div>
+      </Modal>
 
       <AuthModal
         isOpen={isAuthModalOpen}
@@ -929,437 +970,357 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
         onAuthSuccess={(userData: User) => setUser(userData)}
       />
 
-      {/* Save As Modal */}
-      {isSaveAsModalOpen && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSaveAsModalOpen(false)} />
-          <div className="relative w-full max-w-sm bg-white dark:bg-[#1e2028] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v6" />
-                    <polyline points="7 3 7 8 15 8" />
-                    <path d="M17 17l3 3m0-3l-3 3" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Save Template As</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Choose a name for this template</p>
-                </div>
-              </div>
+      {/* Save As Modal: Glass Style */}
+      {/* Save As Modal: Glass Style */}
+      <Modal isOpen={isSaveAsModalOpen} onClose={() => setIsSaveAsModalOpen(false)} maxWidthClass="max-w-[360px]" zIndex={10001}>
+        <h3 className="text-[16px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1 tracking-tight">Save as template</h3>
+        <p className="text-[13px] text-zinc-500 dark:text-zinc-400 mb-6 font-medium">Save current layout for future use.</p>
 
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  autoFocus
-                  className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                  placeholder="My Template Name"
-                  value={saveAsName}
-                  onChange={(e) => setSaveAsName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && saveAsName.trim()) {
-                      handleSaveAsConfirm(saveAsName.trim())
-                    }
-                  }}
-                />
+        <input
+          type="text"
+          className="premium-input w-full mb-6 font-medium"
+          value={saveAsName}
+          onChange={(e) => setSaveAsName(e.target.value)}
+          autoFocus
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && saveAsName.trim()) {
+              handleSaveAsConfirm(saveAsName.trim())
+            }
+          }}
+          placeholder="Template name..."
+        />
 
-                <div className="flex gap-3 pt-2">
-                  <button
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                    onClick={() => setIsSaveAsModalOpen(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
-                    disabled={!saveAsName.trim()}
-                    onClick={() => handleSaveAsConfirm(saveAsName.trim())}
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="flex justify-end gap-2">
+          <button
+            className="premium-button-secondary"
+            onClick={() => setIsSaveAsModalOpen(false)}
+          >
+            Cancel
+          </button>
+          <button
+            className="premium-button-primary"
+            disabled={!saveAsName.trim()}
+            onClick={() => handleSaveAsConfirm(saveAsName.trim())}
+          >
+            Save
+          </button>
         </div>
-      )}
+      </Modal>
 
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
-      {/* Saved Templates Modal */}
-      {isTemplatesModalOpen && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsTemplatesModalOpen(false)} />
-          <div className="relative w-full max-w-md bg-white dark:bg-[#1e2028] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Saved Templates</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Load a previously saved template</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setIsTemplatesModalOpen(false)}
-                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="max-h-[340px] overflow-y-auto -mx-2 px-2 space-y-2">
-                {isLoadingTemplates ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-gray-400 dark:text-gray-500">
-                    <svg className="animate-spin h-8 w-8 mb-3" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    <span className="text-sm font-medium">Loading...</span>
-                  </div>
-                ) : savedTemplates.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-gray-400 dark:text-gray-500">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3 opacity-50">
-                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                    </svg>
-                    <span className="text-sm font-medium">No saved templates yet</span>
-                    <span className="text-xs mt-1">Use Save Template to create one</span>
-                  </div>
-                ) : (
-                  savedTemplates.map((pref) => (
-                    <button
-                      key={pref.id}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left group hover:shadow-md active:scale-[0.98] ${pref.id === templateId
-                          ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-500/10'
-                          : 'border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02] hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5'
-                        }`}
-                      onClick={() => handleLoadTemplate(pref)}
-                    >
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${pref.id === templateId
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-500/10 group-hover:text-blue-600 dark:group-hover:text-blue-400'
-                        } transition-colors`}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                          <polyline points="14 2 14 8 20 8" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                          {pref.name || pref.layout?.fileName || 'Untitled'}
-                        </p>
-                        <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate">
-                          {pref.updatedAt ? new Date(pref.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown date'}
-                        </p>
-                      </div>
-                      {pref.id === templateId && (
-                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-500/15 px-2 py-0.5 rounded-full shrink-0">Active</span>
-                      )}
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
+      {/* Templates Modal: Glass Style */}
+      {/* Templates Modal: Glass Style */}
+      <Modal isOpen={isTemplatesModalOpen} onClose={() => setIsTemplatesModalOpen(false)} maxWidthClass="max-w-xl" zIndex={10001}>
+        <div className="mb-4">
+          <h3 className="text-[16px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Saved templates</h3>
+          <p className="text-[13px] text-zinc-500 dark:text-zinc-400 font-medium">Applied layout settings to current document</p>
         </div>
-      )}
-
-      {/* Saved Documents Modal */}
-      {isDocsModalOpen && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsDocsModalOpen(false)} />
-          <div className="relative w-full max-w-md bg-white dark:bg-[#1e2028] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">My Documents</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Load a saved document</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setIsDocsModalOpen(false)}
-                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="max-h-[340px] overflow-y-auto -mx-2 px-2 space-y-2">
-                {isLoadingDocs ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-gray-400 dark:text-gray-500">
-                    <svg className="animate-spin h-8 w-8 mb-3" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    <span className="text-sm font-medium">Loading documents...</span>
-                  </div>
-                ) : savedDocs.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-gray-400 dark:text-gray-500 text-center">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3 opacity-50 mx-auto">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                    </svg>
-                    <span className="text-sm font-medium">No saved documents yet</span>
-                    <span className="text-xs mt-1">Files you sync will appear here</span>
-                  </div>
-                ) : (
-                  savedDocs.map((doc) => (
-                    <button
-                      key={doc.id}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left group hover:shadow-md active:scale-[0.98] ${
-                        doc.id === documentId
-                          ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-500/10'
-                          : 'border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/[0.02] hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5'
-                      }`}
-                      onClick={() => handleLoadDocument(doc)}
-                    >
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
-                        doc.id === documentId
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-500/10 group-hover:text-emerald-600 dark:group-hover:text-emerald-400'
-                      } transition-colors`}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                          <polyline points="14 2 14 8 20 8" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                          {doc.title || 'Untitled Document'}
-                        </p>
-                        <p className="text-[10px] text-gray-400 dark:text-gray-500">
-                          Markdown File
-                        </p>
-                      </div>
-                      {doc.id === documentId && (
-                        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-500/15 px-2 py-0.5 rounded-full shrink-0">Open</span>
-                      )}
-                    </button>
-                  ))
-                )}
-              </div>
+        <div className="overflow-y-auto pr-1 flex-1 min-h-[50vh] custom-scrollbar">
+          {isLoadingTemplates ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <div className="w-6 h-6 border-2 border-zinc-900 dark:border-zinc-100 border-t-transparent rounded-full animate-spin opacity-20" />
+              <span className="text-[13px] font-medium text-zinc-400">Loading templates...</span>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Layout Settings Modal */}
-      {isLayoutModalOpen && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsLayoutModalOpen(false)} />
-          <div className="relative w-full max-w-md bg-white dark:bg-[#1e2028] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="3" />
-                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1V11a2 2 0 0 1-2-2 2 2 0 0 1 2-2v.09a1.65 1.65 0 0 0 1-1.51 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2v-.09a1.65 1.65 0 0 0-1-1.51z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Layout Config</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Headers, footers, and banners</p>
-                  </div>
-                </div>
+          ) : savedTemplates.length === 0 ? (
+            <div className="text-center py-12 text-zinc-500 text-[13px] font-medium">No templates saved yet.</div>
+          ) : (
+            <div className="grid grid-cols-1 gap-1">
+              {savedTemplates.map(pref => (
                 <button
-                  onClick={() => setIsLayoutModalOpen(false)}
-                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
+                  key={pref.id}
+                  className={`flex items-center justify-between p-3 rounded-xl transition-all text-left group ${pref.id === templateId
+                    ? 'bg-zinc-900/[0.03] dark:bg-white/[0.05]'
+                    : 'hover:bg-zinc-100 dark:hover:bg-white/[0.02]'
+                    }`}
+                  onClick={() => handleLoadTemplate(pref)}
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 block">Header Settings</label>
                   <div className="flex items-center gap-3">
-                    <div className="flex flex-col gap-2">
-                      <button
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 ${headerBanner ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-blue-500'}`}
-                        onClick={() => { headerBannerInputRef.current?.click(); }}
-                        title="Upload Header HTML Banner"
-                      >
-                        <IconHTML size={18} />
-                      </button>
-                      {headerBanner && (
-                        <button
-                          className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-500/10 text-red-500 flex items-center justify-center transition-all hover:bg-red-200 dark:hover:bg-red-500/20 active:scale-95"
-                          onClick={() => setHeaderBanner('')}
-                          title="Remove Header Banner"
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-200 text-sm px-4 py-3 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all"
-                        placeholder="PDF Header Text"
-                        value={pdfConfig.headerText}
-                        onChange={(e) => setPdfConfig(prev => ({ ...prev, headerText: e.target.value }))}
-                      />
-                      <p className="text-[10px] text-gray-400 mt-1.5 ml-1">Visible on every page of the exported PDF</p>
+                    <IconCloud size={16} className={pref.id === templateId ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400'} />
+                    <div>
+                      <p className={`text-[13px] font-medium ${pref.id === templateId ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-600 dark:text-zinc-400'}`}>{pref.name || 'Untitled'}</p>
                     </div>
                   </div>
-                </div>
-
-                <div className="h-px bg-gray-100 dark:bg-gray-700/50" />
-
-                <div>
-                  <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 block">Footer Settings</label>
-                  <div className="flex items-center gap-3">
-                    <div className="flex flex-col gap-2">
-                      <button
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 ${footerBanner ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-blue-500'}`}
-                        onClick={() => { footerBannerInputRef.current?.click(); }}
-                        title="Upload Footer HTML Banner"
-                      >
-                        <IconHTML size={18} />
-                      </button>
-                      {footerBanner && (
-                        <button
-                          className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-500/10 text-red-500 flex items-center justify-center transition-all hover:bg-red-200 dark:hover:bg-red-500/20 active:scale-95"
-                          onClick={() => setFooterBanner('')}
-                          title="Remove Footer Banner"
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-200 text-sm px-4 py-3 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all"
-                        placeholder="PDF Footer Text"
-                        value={pdfConfig.footerText}
-                        onChange={(e) => setPdfConfig(prev => ({ ...prev, footerText: e.target.value }))}
-                      />
-                      <p className="text-[10px] text-gray-400 mt-1.5 ml-1">Visible at the bottom of every page</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8">
-                <button
-                  onClick={() => setIsLayoutModalOpen(false)}
-                  className="w-full bg-gray-900 dark:bg-white text-white dark:text-black font-bold py-3.5 rounded-xl hover:opacity-90 transition-all active:scale-95"
-                >
-                  Done
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Doc Name Modal — shown for both New and Save actions */}
-      {isDocNameModalOpen && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsDocNameModalOpen(false)} />
-          <div className="relative w-full max-w-sm bg-white dark:bg-[#1e2028] rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                  {pendingDocAction === 'new' ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                      <line x1="12" y1="18" x2="12" y2="12" />
-                      <line x1="9" y1="15" x2="15" y2="15" />
-                    </svg>
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-                    </svg>
+                  {pref.id === templateId && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-100" />
                   )}
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                    {pendingDocAction === 'new' ? 'Snapshot' : 'Sync'}
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {pendingDocAction === 'new'
-                      ? 'Choose a name for your new document'
-                      : 'Confirm or rename before saving'}
-                  </p>
-                </div>
-              </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </Modal>
 
-              <div className="space-y-4">
-                <div className="relative">
-                  <input
-                    id="doc-name-input"
-                    type="text"
-                    autoFocus
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 pr-14 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
-                    placeholder="Document name..."
-                    value={docNameInput}
-                    onChange={(e) => setDocNameInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && docNameInput.trim()) {
-                        handleDocNameConfirm(docNameInput)
-                      }
-                      if (e.key === 'Escape') setIsDocNameModalOpen(false)
-                    }}
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded">
-                    .md
-                  </span>
-                </div>
+      {/* Documents Modal: Glass Style */}
+      {/* Documents Modal: Glass Style */}
+      <Modal isOpen={isDocsModalOpen} onClose={() => setIsDocsModalOpen(false)} maxWidthClass="max-w-xl" zIndex={10001}>
+        <div className="mb-4">
+          <h3 className="text-[16px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Your documents</h3>
+          <p className="text-[13px] text-zinc-500 dark:text-zinc-400 font-medium">Access your work from anywhere</p>
+        </div>
+        <div className="overflow-y-auto pr-1 flex-1 min-h-[50vh] custom-scrollbar">
+          {isLoadingDocs ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <div className="w-6 h-6 border-2 border-zinc-900 dark:border-zinc-100 border-t-transparent rounded-full animate-spin opacity-20" />
+              <span className="text-[13px] font-medium text-zinc-400">Loading documents...</span>
+            </div>
+          ) : savedDocs.length === 0 ? (
+            <div className="text-center py-12 text-zinc-500 text-[13px] font-medium">No documents saved yet.</div>
+          ) : (
+            <div className="grid grid-cols-1 gap-1">
+              {savedDocs.map(doc => (
+                <button
+                  key={doc.id}
+                  className={`flex items-center justify-between p-3 rounded-xl transition-all text-left group ${doc.id === documentId
+                    ? 'bg-zinc-900/[0.03] dark:bg-white/[0.05]'
+                    : 'hover:bg-zinc-100 dark:hover:bg-white/[0.02]'
+                    }`}
+                  onClick={() => handleLoadDocument(doc)}
+                >
+                  <div className="flex items-center gap-3">
+                    <IconFile size={16} className={doc.id === documentId ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400'} />
+                    <div>
+                      <p className={`text-[13px] font-medium ${doc.id === documentId ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-600 dark:text-zinc-400'}`}>{doc.title || 'Untitled.md'}</p>
+                    </div>
+                  </div>
+                  {doc.id === documentId && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-100" />
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </Modal>
 
-                <div className="flex gap-3 pt-2">
-                  <button
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                    onClick={() => setIsDocNameModalOpen(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    id="doc-name-confirm-btn"
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
-                    disabled={!docNameInput.trim()}
-                    onClick={() => handleDocNameConfirm(docNameInput)}
-                  >
-                    {pendingDocAction === 'new' ? 'Create' : 'Save'}
-                  </button>
-                </div>
+      {/* Layout Modal: Glass Style */}
+      {/* Layout Modal: Glass Style */}
+      <Modal isOpen={isLayoutModalOpen} onClose={() => setIsLayoutModalOpen(false)} maxWidthClass="max-w-[420px]" zIndex={10001}>
+        {/* Header */}
+        <div className="text-center mb-6 relative z-10 shrink-0">
+          <h2 className="text-[24px] tracking-tight mb-1.5">
+            <span className="font-semibold text-zinc-900 dark:text-white">Layout </span>
+            <span className="font-normal text-zinc-500 dark:text-zinc-400">Settings</span>
+          </h2>
+          <p className="text-[13px] text-zinc-500 font-medium tracking-tight">Configure document appearance and exports</p>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="relative z-10 overflow-y-auto pr-1 space-y-4 flex-1 pb-2 custom-scrollbar">
+          
+          {/* Header Configuration */}
+          <div className="bg-zinc-50/80 dark:bg-[#14161A] border border-zinc-200/80 dark:border-zinc-800/80 rounded-[24px] p-5 space-y-4 shadow-sm dark:shadow-none">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+              <span className="text-[12px] font-semibold text-zinc-900 dark:text-white tracking-widest uppercase">Header</span>
+            </div>
+
+            <div className="relative group">
+              <div className="absolute top-3 left-4 text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pointer-events-none z-10">Text</div>
+              <textarea 
+                className="w-full bg-white dark:bg-[#1A1C20]/80 border border-zinc-200 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[13px] font-medium placeholder-zinc-400 dark:placeholder-zinc-600 rounded-[16px] min-h-[70px] pt-7 px-4 focus:border-blue-500/50 dark:focus:border-blue-500/50 transition-colors resize-none shadow-sm dark:shadow-none custom-input"
+                placeholder="Appears at the top of every page..."
+                value={pdfConfig.headerText}
+                onChange={(e) => setPdfConfig(prev => ({ ...prev, headerText: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">HTML Banner</span>
+                {headerBanner && (
+                  <button onClick={() => setHeaderBanner('')} className="text-zinc-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 text-[10px] font-semibold transition-colors">REMOVE</button>
+                )}
               </div>
+              {!headerBanner ? (
+                <button 
+                  onClick={() => headerBannerInputRef.current?.click()}
+                  className="w-full h-[60px] bg-white dark:bg-[#1A1C20]/80 border border-dashed border-zinc-300 dark:border-zinc-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 rounded-[16px] flex items-center justify-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors group"
+                >
+                  <IconHTML size={16} className="opacity-70 group-hover:opacity-100 transition-opacity" />
+                  <span className="text-[12px] font-semibold">Upload HTML file</span>
+                </button>
+              ) : (
+                <div className="relative rounded-[16px] overflow-hidden group border border-blue-500/30 dark:border-blue-400/30 bg-blue-50/50 dark:bg-blue-500/5 shadow-sm p-4 flex flex-col justify-center h-[60px]">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                       <IconHTML size={16} className="text-blue-500 dark:text-blue-400" />
+                       <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-[200px]">HTML file active</span>
+                    </div>
+                    <button 
+                       onClick={() => headerBannerInputRef.current?.click()}
+                       className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 text-[11px] font-semibold transition-colors"
+                    >
+                       Change
+                    </button>
+                  </div>
+                </div>
+              )}
+              <input ref={headerBannerInputRef} type="file" className="hidden" accept=".html,.htm" onChange={handleHeaderBannerSelected} />
             </div>
           </div>
+
+          {/* Footer Configuration */}
+          <div className="bg-zinc-50/80 dark:bg-[#14161A] border border-zinc-200/80 dark:border-zinc-800/80 rounded-[24px] p-5 space-y-4 shadow-sm dark:shadow-none">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+              <span className="text-[12px] font-semibold text-zinc-900 dark:text-white tracking-widest uppercase">Footer</span>
+            </div>
+
+            <div className="relative group">
+              <div className="absolute top-3 left-4 text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pointer-events-none z-10">Text</div>
+              <textarea 
+                className="w-full bg-white dark:bg-[#1A1C20]/80 border border-zinc-200 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[13px] font-medium placeholder-zinc-400 dark:placeholder-zinc-600 rounded-[16px] min-h-[70px] pt-7 px-4 focus:border-blue-500/50 dark:focus:border-blue-500/50 transition-colors resize-none shadow-sm dark:shadow-none custom-input"
+                placeholder="Appears at the bottom of every page..."
+                value={pdfConfig.footerText}
+                onChange={(e) => setPdfConfig(prev => ({ ...prev, footerText: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pl-1">HTML Banner</span>
+                {footerBanner && (
+                  <button onClick={() => setFooterBanner('')} className="text-zinc-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 text-[10px] font-semibold transition-colors">REMOVE</button>
+                )}
+              </div>
+              {!footerBanner ? (
+                <button 
+                  onClick={() => footerBannerInputRef.current?.click()}
+                  className="w-full h-[60px] bg-white dark:bg-[#1A1C20]/80 border border-dashed border-zinc-300 dark:border-zinc-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 rounded-[16px] flex items-center justify-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors group"
+                >
+                  <IconHTML size={16} className="opacity-70 group-hover:opacity-100 transition-opacity" />
+                  <span className="text-[12px] font-semibold">Upload HTML file</span>
+                </button>
+              ) : (
+                <div className="relative rounded-[16px] overflow-hidden group border border-blue-500/30 dark:border-blue-400/30 bg-blue-50/50 dark:bg-blue-500/5 shadow-sm p-4 flex flex-col justify-center h-[60px]">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                       <IconHTML size={16} className="text-blue-500 dark:text-blue-400" />
+                       <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-[200px]">HTML file active</span>
+                    </div>
+                    <button 
+                       onClick={() => footerBannerInputRef.current?.click()}
+                       className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 text-[11px] font-semibold transition-colors"
+                    >
+                       Change
+                    </button>
+                  </div>
+                </div>
+              )}
+              <input ref={footerBannerInputRef} type="file" className="hidden" accept=".html,.htm" onChange={handleFooterBannerSelected} />
+            </div>
+          </div>
+
         </div>
-      )}
+        
+        {/* Footer action */}
+        <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800/50 relative z-10 shrink-0">
+          <button
+            className="w-full bg-blue-500 hover:bg-blue-400 text-white shadow-[0_4px_14px_rgba(59,130,246,0.3)] transition-colors py-[14px] rounded-[14px] text-[14px] font-semibold"
+            onClick={() => setIsLayoutModalOpen(false)}
+          >
+            Confirm Settings
+          </button>
+        </div>
+      </Modal>
+
+      {/* Doc Name Modal — Glass Style */}
+      {/* Doc Name Modal — Glass Style */}
+      <Modal isOpen={isDocNameModalOpen} onClose={() => setIsDocNameModalOpen(false)} maxWidthClass="max-w-[360px]" zIndex={10001}>
+        <h3 className="text-[16px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1 tracking-tight">
+          {pendingDocAction === 'new' ? 'Create document' : 'Save to cloud'}
+        </h3>
+        <p className="text-[13px] text-zinc-500 dark:text-zinc-400 mb-6 font-medium">
+          {pendingDocAction === 'new' ? 'Start fresh with a new file.' : 'Choose a name to sync your work.'}
+        </p>
+
+        <div className="relative mb-6">
+          <input
+            id="doc-name-input"
+            type="text"
+            autoFocus
+            className="premium-input w-full pr-12 font-medium"
+            placeholder="Document name..."
+            value={docNameInput}
+            onChange={(e) => setDocNameInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && docNameInput.trim()) {
+                handleDocNameConfirm(docNameInput)
+              }
+              if (e.key === 'Escape') setIsDocNameModalOpen(false)
+            }}
+          />
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 opacity-50 uppercase tracking-wider">.md</span>
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <button
+            className="premium-button-secondary"
+            onClick={() => setIsDocNameModalOpen(false)}
+          >
+            Cancel
+          </button>
+          <button
+            id="doc-name-confirm-btn"
+            className="premium-button-primary"
+            disabled={!docNameInput.trim()}
+            onClick={() => handleDocNameConfirm(docNameInput)}
+          >
+            {pendingDocAction === 'new' ? 'Create' : 'Save'}
+          </button>
+        </div>
+      </Modal>
     </div>
   )
 }
 
-function IconHTML({ size = 16 }: { size?: number }) {
+function IconX({ size = 18, className = "" }: { size?: number, className?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
+
+function IconCloud({ size = 18, className = "" }: { size?: number, className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M17.5 19a3.5 3.5 0 0 0 .5-6.975A5.992 5.992 0 0 0 7 9a6 6 0 0 0-6 6 5 5 0 0 0 5 5h11.5z" />
+    </svg>
+  )
+}
+
+function IconChevronRight({ size = 16, className = "" }: { size?: number, className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  )
+}
+
+function IconFile({ size = 18, className = "" }: { size?: number, className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+      <polyline points="14 2 14 8 20 8" />
+    </svg>
+  )
+}
+
+function IconImage({ size = 18, className = "" }: { size?: number, className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <polyline points="21 15 16 10 5 21" />
+    </svg>
+  )
+}
+
+function IconHTML({ size = 16, className = "" }: { size?: number, className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
       <polyline points="14 2 14 8 20 8" />
       <path d="M8 13v4" />
