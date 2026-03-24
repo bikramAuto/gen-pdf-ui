@@ -25,15 +25,16 @@ export const createUser = async (data: CreateUserDTO): Promise<UserResponse> => 
   });
 };
 
-export const setPassword = async (id: string, password: string): Promise<any> => {
+export const setPassword = async (id: string, token: string, password: string): Promise<any> => {
   return apiClient(`/users/set-password?id=${id}`, {
     method: 'PUT',
     body: JSON.stringify({ password }),
+    headers: { Authorization: `${token}` }
   });
 };
 
-export const loginUser = async (data: { email: string; password: string }): Promise<{ user: User; token: string }> => {
-  return apiClient<{ user: User; token: string }>('/users/login', {
+export const loginUser = async (data: { email: string; password: string }): Promise<any> => {
+  return apiClient('/users/login', {
     method: 'POST',
     body: JSON.stringify(data),
   });

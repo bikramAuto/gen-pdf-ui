@@ -157,6 +157,16 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      setUser(null)
+      setAuthMode('signin')
+      setIsAuthModalOpen(true)
+    }
+    window.addEventListener('auth-expired', handleAuthExpired)
+    return () => window.removeEventListener('auth-expired', handleAuthExpired)
+  }, [])
+
   const handleNew = useCallback(() => {
     if (isDirty && !window.confirm('Discard unsaved changes?')) return
     // Prompt for the new document's title before clearing content
@@ -846,34 +856,55 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
                 // Add paste listener for images
                 const container = editor.getDomNode();
                 if (container) {
-                  container.addEventListener('paste', async (e: ClipboardEvent) => {
+                  const onPaste = async (e: ClipboardEvent) => {
                     const items = e.clipboardData?.items;
                     if (!items) return;
 
+                    let containsImage = false;
                     for (const item of items) {
                       if (item.type.startsWith('image/')) {
-                        const file = item.getAsFile();
-                        if (file) {
-                          e.preventDefault();
-                          try {
-                            const compressed = await compressImage(file);
-                            const hash = await storeImage(compressed);
-                            const markdown = `![pasted-image](${hash})`;
+                        containsImage = true;
+                        break;
+                      }
+                    }
 
-                            const selection = editor.getSelection();
-                            editor.executeEdits('paste-image', [{
-                              range: selection,
-                              text: markdown,
-                              forceMoveMarkers: true
-                            }]);
-                            setIsDirty(true);
-                          } catch (err) {
-                            console.error('Paste image failed:', err);
+                    if (containsImage) {
+                      // Only intercept if there's an image. Let Monaco handle text paste normally.
+                      e.preventDefault();
+                      e.stopImmediatePropagation();
+
+                      for (const item of items) {
+                        if (item.type.startsWith('image/')) {
+                          const file = item.getAsFile();
+                          if (file) {
+                            try {
+                              const compressed = await compressImage(file);
+                              const hash = await storeImage(compressed);
+                              const markdown = `![pasted-image](${hash})`;
+
+                              // Ensure editor/model still exists before attempting to edit
+                              if (editor && editor.getModel()) {
+                                const selection = editor.getSelection();
+                                editor.executeEdits('paste-image', [{
+                                  range: selection,
+                                  text: markdown,
+                                  forceMoveMarkers: true
+                                }]);
+                                setIsDirty(true);
+                              }
+                            } catch (err) {
+                              console.error('Paste image failed:', err);
+                            }
                           }
                         }
                       }
                     }
-                  }, true);
+                  };
+
+                  container.addEventListener('paste', onPaste);
+                  editor.onDidDispose(() => {
+                    container.removeEventListener('paste', onPaste);
+                  });
                 }
               }}
             />
@@ -1105,8 +1136,8 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
           <p className="text-[13px] text-zinc-500 font-medium tracking-tight">Configure document appearance and exports</p>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="relative z-10 overflow-y-auto pr-1 space-y-4 flex-1 pb-2 custom-scrollbar">
+        {/* Content */}
+        <div className="relative z-10 space-y-4 pb-2 w-full">
           
           {/* Header Configuration */}
           <div className="bg-zinc-50/80 dark:bg-[#14161A] border border-zinc-200/80 dark:border-zinc-800/80 rounded-[24px] p-5 space-y-4 shadow-sm dark:shadow-none">

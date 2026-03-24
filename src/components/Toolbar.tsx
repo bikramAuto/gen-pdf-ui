@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import type { User } from '../api/users'
 import type { PDFConfig } from '../types/pdf'
+import Modal from './ui/Modal'
 
 interface ToolbarProps {
   theme: 'dark' | 'light'
@@ -165,13 +166,18 @@ export default function Toolbar({
             </button>
 
             {/* THE ACTION HUB DROPDOWN */}
-            {hubOpen && (
-              <div className="absolute top-full mt-2 right-0 w-64 md:w-72 bg-white/95 dark:bg-[#1e2028]/95 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-xl shadow-2xl p-2 z-[100]">
+            {/* THE ACTION HUB MODAL */}
+            <Modal isOpen={hubOpen} onClose={() => setHubOpen(false)} maxWidthClass="max-w-[340px]" zIndex={10002}>
+              <div className="flex flex-col">
+                <div className="mb-4 text-center">
+                  <h3 className="text-[18px] font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Save & Export</h3>
+                  <p className="text-[13px] text-zinc-500 dark:text-zinc-400 font-medium">Choose how you'd like to save your work</p>
+                </div>
 
                 {/* Section: Download Locally */}
                 <div className="px-3 pt-2 pb-1 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2">
                   <IconDownload size={10} />
-                  Download to computer
+                  Download to local
                 </div>
                 <button
                   className="flex items-center gap-3 w-full px-3 py-2 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
@@ -198,7 +204,7 @@ export default function Toolbar({
                   </div>
                 </button>
 
-                <div className="h-px bg-gray-100 dark:bg-gray-800/50 my-2 mx-2" />
+                <div className="h-px bg-gray-100 dark:bg-zinc-800/50 my-2 mx-2" />
 
                 {/* Section: Template Library */}
                 <div className="px-3 pt-1 pb-1 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2">
@@ -222,7 +228,7 @@ export default function Toolbar({
                   </div>
                 </button>
 
-                <div className="h-px bg-gray-100 dark:bg-gray-800/50 my-2 mx-2" />
+                <div className="h-px bg-gray-100 dark:bg-zinc-800/50 my-2 mx-2" />
 
                 {/* Section: Project Content */}
                 <div className="px-3 pt-1 pb-1 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2">
@@ -246,7 +252,7 @@ export default function Toolbar({
                   </div>
                 </button>
               </div>
-            )}
+            </Modal>
           </div>
 
           <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 hidden md:block" />
@@ -264,107 +270,114 @@ export default function Toolbar({
               )}
             </button>
 
-            {profileMenuOpen && (
-              <div className="absolute top-full mt-2 right-0 w-64 bg-white dark:bg-[#1e2028] border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl p-1.5 z-[9999]">
-                <button
-                  className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
-                  onClick={() => { onToggleTheme(); }}
-                >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-yellow-500 transition-colors">
-                    {theme === 'dark' ? <IconSun /> : <IconMoon />}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[13px] font-semibold">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-                    <span className="text-[11px] text-gray-400 dark:text-gray-500">Switch appearance</span>
-                  </div>
-                </button>
-
-                <div className="h-px bg-gray-100 dark:bg-gray-700/50 my-1 mx-2" />
-
-                <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800 mb-2">
-                  <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-0.5">Account</p>
-                  {user && (
+            {/* PROFILE MENU MODAL */}
+            <Modal isOpen={profileMenuOpen} onClose={() => setProfileMenuOpen(false)} maxWidthClass="max-w-[320px]" zIndex={10002}>
+              <div className="flex flex-col w-full px-1">
+                <div className="px-3 py-2 border-b border-gray-100 dark:border-zinc-800/50 mt-1 mb-4 text-center pb-4">
+                  <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">Account</p>
+                  {user ? (
                     <>
-                      <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user.name}</p>
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                      <p className="text-[15px] font-bold text-gray-900 dark:text-white truncate tracking-tight">{user.name}</p>
+                      <p className="text-[12px] opacity-70 text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
                     </>
+                  ) : (
+                    <p className="text-[14px] font-bold text-gray-900 dark:text-white truncate mb-1">Guest Session</p>
                   )}
                 </div>
 
-                {!user ? (
-                  <>
-                    <button
-                      className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
-                      onClick={() => { setProfileMenuOpen(false); onOpenAuth('signin'); }}
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                        <IconSignIn />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[13px] font-semibold">Sign In</span>
-                        <span className="text-[11px] text-gray-400 dark:text-gray-500">Access your account</span>
-                      </div>
-                    </button>
+                <div className="space-y-1 mb-2">
+                  <button
+                    className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-[12px] cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group"
+                    onClick={() => { onToggleTheme(); }}
+                  >
+                    <div className="flex items-center justify-center w-9 h-9 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-yellow-500 transition-colors">
+                      {theme === 'dark' ? <IconSun /> : <IconMoon />}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[13px] font-semibold">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+                      <span className="text-[11px] text-gray-400 dark:text-gray-500">Switch appearance</span>
+                    </div>
+                  </button>
+                </div>
 
-                    <button
-                      className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
-                      onClick={() => { setProfileMenuOpen(false); onOpenAuth('signup'); }}
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        <IconSignUp />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[13px] font-semibold">Sign Up</span>
-                        <span className="text-[11px] text-gray-400 dark:text-gray-500">Create new account</span>
-                      </div>
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
-                      onClick={() => { setProfileMenuOpen(false); onOpenTemplates(); }}
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                        <IconCloud />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[13px] font-semibold">My Templates</span>
-                        <span className="text-[11px] text-gray-400 dark:text-gray-500">Load layout from templates</span>
-                      </div>
-                    </button>
+                <div className="h-px bg-gray-100 dark:bg-zinc-800/50 my-3 mx-2" />
 
-                    <button
-                      className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
-                      onClick={() => { setProfileMenuOpen(false); onOpenDocuments(); }}
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                        <IconFile />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[13px] font-semibold">My Documents</span>
-                        <span className="text-[11px] text-gray-400 dark:text-gray-500">Access your saved files</span>
-                      </div>
-                    </button>
+                <div className="space-y-1">
+                  {!user ? (
+                    <>
+                      <button
+                        className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-[12px] cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group"
+                        onClick={() => { setProfileMenuOpen(false); onOpenAuth('signin'); }}
+                      >
+                        <div className="flex items-center justify-center w-9 h-9 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                          <IconSignIn />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[13px] font-semibold">Sign In</span>
+                          <span className="text-[11px] text-gray-400 dark:text-gray-500">Access your account</span>
+                        </div>
+                      </button>
 
-                    <div className="h-px bg-gray-100 dark:bg-gray-700/50 my-1 mx-2" />
+                      <button
+                        className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-[12px] cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group"
+                        onClick={() => { setProfileMenuOpen(false); onOpenAuth('signup'); }}
+                      >
+                        <div className="flex items-center justify-center w-9 h-9 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          <IconSignUp />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[13px] font-semibold">Sign Up</span>
+                          <span className="text-[11px] text-gray-400 dark:text-gray-500">Create new account</span>
+                        </div>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-[12px] cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group"
+                        onClick={() => { setProfileMenuOpen(false); onOpenTemplates(); }}
+                      >
+                        <div className="flex items-center justify-center w-9 h-9 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          <IconCloud />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[13px] font-semibold">My Templates</span>
+                          <span className="text-[11px] text-gray-400 dark:text-gray-500">Load layout from templates</span>
+                        </div>
+                      </button>
 
-                    <button
-                      className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-lg cursor-pointer text-red-600 dark:text-red-400 text-left hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors group"
-                      onClick={() => { setProfileMenuOpen(false); onLogout(); }}
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-md bg-red-50 dark:bg-red-500/5 text-red-500 transition-colors">
-                        <IconSignOut />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[13px] font-semibold">Log Out</span>
-                        <span className="text-[11px] opacity-70">Sign out of session</span>
-                      </div>
-                    </button>
-                  </>
-                )}
+                      <button
+                        className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-[12px] cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group"
+                        onClick={() => { setProfileMenuOpen(false); onOpenDocuments(); }}
+                      >
+                        <div className="flex items-center justify-center w-9 h-9 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                          <IconFile />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[13px] font-semibold">My Documents</span>
+                          <span className="text-[11px] text-gray-400 dark:text-gray-500">Access your saved files</span>
+                        </div>
+                      </button>
+
+                      <div className="h-px bg-gray-100 dark:bg-zinc-800/50 my-3 mx-2" />
+
+                      <button
+                        className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-[12px] cursor-pointer text-red-600 dark:text-red-400 text-left hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors group"
+                        onClick={() => { setProfileMenuOpen(false); onLogout(); }}
+                      >
+                        <div className="flex items-center justify-center w-9 h-9 rounded-md bg-red-50 dark:bg-red-500/5 text-red-500 transition-colors">
+                          <IconSignOut />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[13px] font-semibold">Log Out</span>
+                          <span className="text-[11px] opacity-70">Sign out of session</span>
+                        </div>
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-            )}
+            </Modal>
           </div>
         </div>
       </div>

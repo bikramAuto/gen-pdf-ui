@@ -129,6 +129,7 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
     if (!measureEl) return
 
     let cancelled = false
+    let timeoutId: ReturnType<typeof setTimeout>
 
     const run = async () => {
       // Wait for fonts to load before measuring text (#3)
@@ -155,9 +156,13 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
       }
     }
 
-    run()
+    // Debounce the update to avoid flickering and excessive calculations during typing
+    timeoutId = setTimeout(run, 500)
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+      clearTimeout(timeoutId)
+    }
   }, [fullHtml, pdfConfig.format, pdfConfig.orientation, pdfConfig.margin, headerBanner, footerBanner, isPrintMode])
 
 

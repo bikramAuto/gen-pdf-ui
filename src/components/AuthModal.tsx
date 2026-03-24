@@ -60,7 +60,13 @@ export default function AuthModal({ isOpen, onClose, initialMode, onAuthSuccess 
                   const response = await loginUser({ email, password });
                   const data = response as any;
                   if (data.token) {
-                    localStorage.setItem('token', data.token);
+                    const accessToken = typeof data.token === 'string' ? data.token : data.token.accessToken;
+                    const refreshToken = data.token.refreshToken;
+                    
+                    if (accessToken) localStorage.setItem('token', accessToken);
+                    if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+                    if (data.userId) localStorage.setItem('userId', data.userId);
+                    
                     onAuthSuccess({ id: data.userId || 'unknown', name: email.split('@')[0], email });
                     onClose();
                   } else throw new Error('No token received');

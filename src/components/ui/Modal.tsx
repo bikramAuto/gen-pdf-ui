@@ -28,7 +28,7 @@ export default function Modal({
         {/* Glow behind the modal border */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-300/40 via-white/50 to-zinc-200/50 dark:from-blue-500/20 dark:via-zinc-800/20 dark:to-zinc-900/50 rounded-[32px]" />
         
-        <div className="relative bg-white/95 dark:bg-[#0F1115]/95 backdrop-blur-[40px] rounded-[31px] p-8 overflow-hidden flex flex-col max-h-[85vh] shadow-[inset_0_1px_1px_rgba(255,255,255,0.7)] dark:shadow-none border border-black/5 dark:border-none">
+        <div className="relative bg-white/95 dark:bg-[#0F1115]/95 backdrop-blur-[40px] rounded-[31px] p-8 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] flex flex-col max-h-[90vh] shadow-[inset_0_1px_1px_rgba(255,255,255,0.7)] dark:shadow-none border border-black/5 dark:border-none">
           {/* Top-left blue orb */}
           <div className="absolute -top-24 -left-24 w-64 h-64 bg-blue-400/20 dark:bg-blue-500/15 blur-[60px] rounded-full pointer-events-none" />
           
