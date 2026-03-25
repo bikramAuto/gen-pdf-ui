@@ -144,8 +144,10 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
   useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark')
+      document.documentElement.style.colorScheme = 'dark'
     } else {
       document.documentElement.classList.remove('dark')
+      document.documentElement.style.colorScheme = 'light'
     }
   }, [theme])
 
@@ -163,9 +165,19 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
       setAuthMode('signin')
       setIsAuthModalOpen(true)
     }
+    const handleApiError = (e: any) => {
+      const { message } = e.detail || { message: 'An unexpected error occurred' }
+      showToast(message, 'error')
+    }
+
     window.addEventListener('auth-expired', handleAuthExpired)
-    return () => window.removeEventListener('auth-expired', handleAuthExpired)
-  }, [])
+    window.addEventListener('api-error', handleApiError)
+    
+    return () => {
+      window.removeEventListener('auth-expired', handleAuthExpired)
+      window.removeEventListener('api-error', handleApiError)
+    }
+  }, [showToast])
 
   const handleNew = useCallback(() => {
     if (isDirty && !window.confirm('Discard unsaved changes?')) return
@@ -411,7 +423,7 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
         showToast(pendingDocAction === 'snapshot' ? 'Document saved as new snapshot!' : 'Document synced!', 'success')
       } catch (err) {
         console.error('Save failed:', err)
-        showToast(`Save failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error')
+        // Global error handler will show the message
       } finally {
         setIsSaving(false)
       }
@@ -468,7 +480,7 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
       setSavedTemplates(templates)
     } catch (err) {
       console.error('Failed to fetch templates:', err)
-      showToast('Failed to load saved templates', 'error')
+      // Global error handler will show the message
       setSavedTemplates([])
     } finally {
       setIsLoadingTemplates(false)
@@ -484,7 +496,7 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
       setSavedDocs(result as DocumentListItem[])
     } catch (err) {
       console.error('Failed to fetch documents:', err)
-      showToast('Failed to load saved documents', 'error')
+      // Global error handler will show the message
       setSavedDocs([])
     } finally {
       setIsLoadingDocs(false)
@@ -531,7 +543,6 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
       showToast(`Loaded document "${fullDoc.title}"`, 'success')
     } catch (err) {
       console.error('Failed to load document:', err)
-      showToast('Failed to load document details', 'error')
     }
   }, [user, showToast])
 
@@ -567,7 +578,7 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
       showToast(`Applied layout from "${fullPref.name || pref.name || 'Untitled'}"`, 'success')
     } catch (err) {
       console.error('Failed to load template:', err)
-      showToast('Failed to load template', 'error')
+      // Global error handler will show the message
     }
   }, [user, showToast])
 
@@ -586,7 +597,7 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
       showToast(`"${name}" saved as new template!`, 'success')
     } catch (err) {
       console.error('Save As failed:', err)
-      showToast(`Save As failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error')
+      // Global error handler will show the message
     } finally {
       setIsSaving(false)
     }

@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { apiClient, RequestOptions } from './client';
 
 export interface CreateUserDTO {
   name: string;
@@ -18,8 +18,9 @@ export interface User {
   email: string;
 }
 
-export const createUser = async (data: CreateUserDTO): Promise<UserResponse> => {
+export const createUser = async (data: CreateUserDTO, options: RequestOptions = {}): Promise<UserResponse> => {
   return apiClient<UserResponse>('/users/create', {
+    ...options,
     method: 'POST',
     body: JSON.stringify(data),
   });
@@ -33,8 +34,9 @@ export const setPassword = async (id: string, token: string, password: string): 
   });
 };
 
-export const loginUser = async (data: { email: string; password: string }): Promise<any> => {
+export const loginUser = async (data: { email: string; password: string }, options: RequestOptions = {}): Promise<any> => {
   return apiClient('/users/login', {
+    ...options,
     method: 'POST',
     body: JSON.stringify(data),
   });

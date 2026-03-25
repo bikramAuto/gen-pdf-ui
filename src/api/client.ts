@@ -3,7 +3,11 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 let isRefreshing = false;
 let refreshPromise: Promise<void> | null = null;
 
-export const apiClient = async <T>(path: string, options: RequestInit = {}): Promise<T> => {
+export interface RequestOptions extends RequestInit {
+  skipGlobalError?: boolean;
+}
+
+export const apiClient = async <T>(path: string, options: RequestOptions = {}): Promise<T> => {
   let tokenUsed = '';
 
   const executeRequest = async () => {
@@ -21,9 +25,19 @@ export const apiClient = async <T>(path: string, options: RequestInit = {}): Pro
     });
   };
 
-  let response = await executeRequest();
+  let response: Response;
+  try {
+    response = await executeRequest();
+  } catch (err) {
+    const message = 'Network connection failed. Please check your internet.';
+    if (!options.skipGlobalError) {
+      window.dispatchEvent(new CustomEvent('api-error', { detail: { message } }));
+    }
+    throw err;
+  }
 
   if (!response.ok && (response.status === 401 || response.status === 403)) {
+    // ... (rest of the retry logic remains the same)
     const currentStoredToken = localStorage.getItem('token') || '';
     
     if (tokenUsed && tokenUsed !== currentStoredToken) {
@@ -42,7 +56,6 @@ export const apiClient = async <T>(path: string, options: RequestInit = {}): Pro
               if (!refreshRes.ok) throw new Error(`Refresh failed with status ${refreshRes.status}`);
               const data = await refreshRes.json();
               
-              // Extreme bulletproof extractor
               const newAccessToken = data?.token?.accessToken || data?.token?.token || data?.token || data?.accessToken || data?.data?.token?.accessToken || data?.data?.token || data?.data?.accessToken;
               const newRefreshToken = data?.token?.refreshToken || data?.token?.rToken || data?.rToken || data?.refreshToken || data?.data?.token?.refreshToken || data?.data?.rToken || data?.data?.refreshToken;
               
@@ -84,7 +97,13 @@ export const apiClient = async <T>(path: string, options: RequestInit = {}): Pro
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Request failed with status ${response.status}`);
+    const message = errorData.message || `Request failed with status ${response.status}`;
+    
+    if (!options.skipGlobalError) {
+      window.dispatchEvent(new CustomEvent('api-error', { detail: { message } }));
+    }
+    
+    throw new Error(message);
   }
 
   return response.json();

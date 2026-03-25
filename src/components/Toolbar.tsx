@@ -412,7 +412,7 @@ export default function Toolbar({
           </button>
 
           <button className={btnBase} onClick={onOpenLayout} title="Layout Settings">
-            <IconSettings />
+            <IconLayout />
             <span className="hidden lg:inline text-xs font-medium">Layout</span>
           </button>
 
@@ -465,7 +465,7 @@ export default function Toolbar({
                 onClick={() => { setFormatOpen(!formatOpen); setOrientOpen(false); setMarginOpen(false); }}
                 title="Page Size"
               >
-                <IconLayout />
+                <IconPageSize />
               </button>
               {formatOpen && (
                 <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-32 bg-white dark:bg-[#1e2028] border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl p-2 z-[9999] animate-in fade-in slide-in-from-top-2">
@@ -536,7 +536,7 @@ export default function Toolbar({
             <div className="flex items-center gap-1 bg-gray-100 dark:bg-white/5 rounded-md px-2 py-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Size</span>
               <select
-                className="bg-transparent border-none text-gray-800 dark:text-gray-200 text-xs font-medium outline-none cursor-pointer"
+                className="bg-transparent border-none text-gray-800 dark:text-gray-200 text-xs font-medium outline-none cursor-pointer dark:[color-scheme:dark]"
                 value={pdfConfig.format}
                 onChange={(e) => onUpdatePDFConfig({ format: e.target.value as any })}
               >
@@ -548,7 +548,7 @@ export default function Toolbar({
 
             <div className="flex items-center bg-gray-100 dark:bg-white/5 rounded-md px-2 py-1">
               <select
-                className="bg-transparent border-none text-gray-800 dark:text-gray-200 text-xs font-medium outline-none cursor-pointer"
+                className="bg-transparent border-none text-gray-800 dark:text-gray-200 text-xs font-medium outline-none cursor-pointer dark:[color-scheme:dark]"
                 value={pdfConfig.orientation}
                 onChange={(e) => onUpdatePDFConfig({ orientation: e.target.value as any })}
               >
@@ -560,7 +560,7 @@ export default function Toolbar({
             <div className="flex items-center gap-1 bg-gray-100 dark:bg-white/5 rounded-md px-2 py-1">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Margin</span>
               <select
-                className="bg-transparent border-none text-gray-800 dark:text-gray-200 text-xs font-medium outline-none cursor-pointer"
+                className="bg-transparent border-none text-gray-800 dark:text-gray-200 text-xs font-medium outline-none cursor-pointer dark:[color-scheme:dark]"
                 value={pdfConfig.margin}
                 onChange={(e) => onUpdatePDFConfig({ margin: parseFloat(e.target.value) })}
               >
@@ -806,13 +806,18 @@ function IconMargin() {
   )
 }
 
+function IconPageSize() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="2" width="16" height="20" rx="2" />
+      <path d="M9 22h6M4 12h16" opacity="0.3" />
+    </svg>
+  )
+}
+
 function IconLayout({ size = 15 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-      <line x1="3" y1="9" x2="21" y2="9" />
-      <line x1="9" y1="21" x2="9" y2="9" />
-    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-layout-panel-top"><rect width="18" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /></svg>
   )
 }
 

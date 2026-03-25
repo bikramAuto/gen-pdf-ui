@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { apiClient, RequestOptions } from './client';
 
 export interface TemplatePayload {
   name?: string;
@@ -11,8 +11,9 @@ export interface TemplateResponse {
   id: string | null;
 }
 
-export const createTemplate = async (id: string, data: TemplatePayload): Promise<TemplateResponse> => {
+export const createTemplate = async (id: string, data: TemplatePayload, options: RequestOptions = {}): Promise<TemplateResponse> => {
   return apiClient<TemplateResponse>(`/preferences/create/${id}`, {
+    ...options,
     method: 'POST',
     body: JSON.stringify(data),
   });
@@ -21,11 +22,13 @@ export const createTemplate = async (id: string, data: TemplatePayload): Promise
 export const updateTemplate = async (
   userId: string,
   prefId: string,
-  data: TemplatePayload
+  data: TemplatePayload,
+  options: RequestOptions = {}
 ): Promise<TemplateResponse> => {
   return apiClient<TemplateResponse>(
     `/preferences/update/${userId}?prefId=${prefId}`,
     {
+      ...options,
       method: 'PUT',
       body: JSON.stringify(data),
     }
@@ -52,21 +55,23 @@ export interface PaginatedTemplates {
 export const getTemplates = async (
   userId: string,
   page: number = 1,
-  limit: number = 20
+  limit: number = 20,
+  options: RequestOptions = {}
 ): Promise<PaginatedTemplates> => {
   return apiClient<PaginatedTemplates>(
     `/preferences/getPref/${userId}?page=${page}&limit=${limit}`,
-    { method: 'GET' }
+    { ...options, method: 'GET' }
   );
 };
 
 // Get a specific template by templateId
 export const getTemplateById = async (
   userId: string,
-  templateId: string
+  templateId: string,
+  options: RequestOptions = {}
 ): Promise<SavedTemplate> => {
   return apiClient<SavedTemplate>(
     `/preferences/getPref/${userId}?prefId=${templateId}`,
-    { method: 'GET' }
+    { ...options, method: 'GET' }
   );
 };

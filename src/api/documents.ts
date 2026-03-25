@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { apiClient, RequestOptions } from './client';
 
 // ─── Enums & Types ──────────────────────────────────────────────────────────
 
@@ -43,9 +43,11 @@ export interface SavedDocument {
  */
 export const createDocument = async (
   id: string,
-  data: DocumentPayload
+  data: DocumentPayload,
+  options: RequestOptions = {}
 ): Promise<DocumentResponse> => {
   return apiClient<DocumentResponse>(`/documents/create/${id}`, {
+    ...options,
     method: 'POST',
     body: JSON.stringify(data),
   });
@@ -62,11 +64,13 @@ export const createDocument = async (
 export const updateDocument = async (
   userId: string,
   docId: string,
-  data: DocumentPayload
+  data: DocumentPayload,
+  options: RequestOptions = {}
 ): Promise<DocumentResponse> => {
   return apiClient<DocumentResponse>(
     `/documents/update/${userId}?docId=${docId}`,
     {
+      ...options,
       method: 'PUT',
       body: JSON.stringify(data),
     }
@@ -100,13 +104,15 @@ export const getDocuments = async (
   userId: string,
   docId?: string,
   page: number = 1,
-  limit: number = 20
+  limit: number = 20,
+  options: RequestOptions = {}
 ): Promise<(DocumentListItem | FullDocument)[]> => {
   let url = `/documents/getDoc/${userId}?page=${page}&limit=${limit}`;
   if (docId) {
     url += `&docId=${docId}`;
   }
   return apiClient<(DocumentListItem | FullDocument)[]>(url, {
+    ...options,
     method: 'GET',
   });
 };
