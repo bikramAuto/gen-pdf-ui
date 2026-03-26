@@ -215,23 +215,18 @@ export default function AuthModal({ isOpen, onClose, initialMode, onAuthSuccess 
 
           <button 
             type="button" 
-            disabled={isAnyLoading} 
-            className="w-full h-[52px] rounded-[16px] bg-white dark:bg-[#14161A] hover:bg-zinc-50 dark:hover:bg-[#1A1C20] border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none transition-colors flex items-center justify-between px-5 group disabled:opacity-50"
-            onClick={() => socialLogin('linkedin')}
+            disabled={true} 
+            className="w-full h-[52px] rounded-[16px] bg-white dark:bg-[#14161A] opacity-60 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none flex items-center justify-between px-5 group cursor-not-allowed"
           >
             <div className="flex items-center gap-3">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" fill="#0A66C2"/>
               </svg>
-              <span className="text-[13px] font-medium text-zinc-700 dark:text-zinc-300">Continue with LinkedIn</span>
+              <span className="text-[13px] font-medium text-zinc-400 dark:text-zinc-600">Continue with LinkedIn</span>
             </div>
-            <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800/40 flex items-center justify-center text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-              {isSocialLoading ? (
-                <div className="w-3 h-3 border-2 border-zinc-400 border-t-zinc-900 rounded-full animate-spin" />
-              ) : (
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-              )}
-            </div>
+            <span className="px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 text-[10px] font-bold uppercase tracking-wider">
+              Coming Soon
+            </span>
           </button>
         </div>
 

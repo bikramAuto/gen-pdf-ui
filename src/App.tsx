@@ -21,14 +21,13 @@ const DEFAULT_CONTENT = ``;
 type Theme = 'dark' | 'light'
 
 
-export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
+export default function App({ onGoToDocs, theme, onToggleTheme }: { onGoToDocs?: () => void, theme: 'light' | 'dark', onToggleTheme: () => void }) {
   const queryParams = new URLSearchParams(window.location.search)
   const isSetPasswordView = queryParams.has('id')
 
   const [content, setContent] = useState(() => localStorage.getItem('editorContent') || DEFAULT_CONTENT)
   const [fileName, setFileName] = useState(() => localStorage.getItem('editorFileName') || 'Untitled.md')
   const [isDirty, setIsDirty] = useState(false)
-  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('editorTheme') as Theme) || 'light')
   const [splitPos, setSplitPos] = useState(() => Number(localStorage.getItem('editorSplitPos')) || 50)
   const [showPDFTimestamp, setShowPDFTimestamp] = useState(() => localStorage.getItem('editorShowPDFTimestamp') !== 'false')
   const [showPageNumbers, setShowPageNumbers] = useState(() => localStorage.getItem('editorShowPageNumbers') !== 'false')
@@ -61,7 +60,7 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
   // Persistence Effects
   useEffect(() => { localStorage.setItem('editorContent', content) }, [content])
   useEffect(() => { localStorage.setItem('editorFileName', fileName) }, [fileName])
-  useEffect(() => { localStorage.setItem('editorTheme', theme) }, [theme])
+  useEffect(() => { localStorage.getItem('editorTheme') }, [theme])
   useEffect(() => { localStorage.setItem('editorSplitPos', splitPos.toString()) }, [splitPos])
   useEffect(() => { localStorage.setItem('editorShowPDFTimestamp', showPDFTimestamp.toString()) }, [showPDFTimestamp])
   useEffect(() => { localStorage.setItem('editorShowPageNumbers', showPageNumbers.toString()) }, [showPageNumbers])
@@ -140,15 +139,9 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
   const footerBannerInputRef = useRef<HTMLInputElement>(null)
   const editorRef = useRef<any>(null)
 
-  // Apply theme on root element
+  // Theme class is handled by Root component
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark')
-      document.documentElement.style.colorScheme = 'dark'
-    } else {
-      document.documentElement.classList.remove('dark')
-      document.documentElement.style.colorScheme = 'light'
-    }
+    // We can still do side effects here if needed, but Root handles the class
   }, [theme])
 
   // Detect mobile for initial splitPos or pane handling
@@ -326,8 +319,8 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
   }, [])
 
   const toggleTheme = useCallback(() => {
-    setTheme(t => (t === 'dark' ? 'light' : 'dark'))
-  }, [])
+    onToggleTheme()
+  }, [onToggleTheme])
 
   const handleLogout = useCallback(() => {
     setUser(null)
@@ -521,7 +514,7 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
         const template = fullDoc.template
         const layout = typeof template.layout === 'string' ? JSON.parse(template.layout) : template.layout
 
-        if (layout.theme) setTheme(layout.theme)
+        if (layout.theme && layout.theme !== theme) onToggleTheme()
         if (layout.splitPos !== undefined) setSplitPos(layout.splitPos)
         if (layout.showPDFTimestamp !== undefined) setShowPDFTimestamp(layout.showPDFTimestamp)
         if (layout.showPageNumbers !== undefined) setShowPageNumbers(layout.showPageNumbers)
@@ -560,7 +553,7 @@ export default function App({ onGoToDocs }: { onGoToDocs?: () => void } = {}) {
       const layout = typeof fullPref.layout === 'string' ? JSON.parse(fullPref.layout) : (fullPref.layout || {})
 
       // Apply layout settings ONLY. Do NOT overwrite current content or documentId.
-      if (layout.theme) setTheme(layout.theme)
+      if (layout.theme && layout.theme !== theme) onToggleTheme()
       if (layout.splitPos !== undefined) setSplitPos(layout.splitPos)
       if (layout.showPDFTimestamp !== undefined) setShowPDFTimestamp(layout.showPDFTimestamp)
       if (layout.showPageNumbers !== undefined) setShowPageNumbers(layout.showPageNumbers)

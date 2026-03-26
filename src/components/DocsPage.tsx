@@ -1,259 +1,500 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+import Modal from './ui/Modal'
 import '../styles/global.css'
 
-// ── Feature Data ────────────────────────────────────────────────────────────
 interface Feature {
-  icon: string
+  icon: React.ReactNode
   title: string
   desc: string
-  category: 'core' | 'pdf' | 'cloud' | 'ui'
 }
 
 const FEATURES: Feature[] = [
-  // ── Core / Editor ──
-  { icon: '✏️', title: 'Monaco Code Editor', desc: 'Full-featured code editor powered by Monaco — syntax highlighting, code folding, bracket colorization, smooth cursor, JetBrains Mono font.', category: 'core' },
-  { icon: '🧩', title: 'Syntax Highlighting', desc: 'Code blocks are highlighted using highlight.js with the GitHub theme. All popular programming languages supported.', category: 'core' },
-  { icon: '📋', title: 'GFM Tables', desc: 'GitHub Flavored Markdown tables with styled borders, alternating row colors, and responsive widths.', category: 'core' },
-  { icon: '🖼️', title: 'Image Insertion & Storage', desc: 'Images auto-compressed to WebP, SHA-256 hashed, stored in IndexedDB. Self-contained, no external hosting.', category: 'core' },
-  { icon: '🧹', title: 'Auto Image Cleanup', desc: 'Unused images detected and removed from IndexedDB automatically when deleted from Markdown.', category: 'core' },
-  { icon: '📂', title: 'Open & Download Markdown', desc: 'Open .md/.txt files locally, download your work as .md with rename dialog.', category: 'core' },
-  { icon: '📑', title: 'Manual Page Breaks', desc: 'Insert explicit page breaks that the pagination engine recognizes and respects.', category: 'core' },
-
-  // ── PDF & Export ──
-  { icon: '👁️', title: 'Live Auto-Pagination', desc: 'Content auto-splits across pages matching your selected format, orientation, and margins — WYSIWYG preview.', category: 'pdf' },
-  { icon: '📄', title: 'PDF Export', desc: 'Professional PDF export via browser print dialog. Headers, footers, and timestamps render exactly as previewed.', category: 'pdf' },
-  { icon: '📐', title: 'Page Format & Orientation', desc: 'A4, Letter, or Legal in Portrait or Landscape. Preview and PDF adapt instantly.', category: 'pdf' },
-  { icon: '📏', title: 'Configurable Margins', desc: 'Set margins from 0.2 to 1.0 inches, consistent across screen preview and exported PDF.', category: 'pdf' },
-  { icon: '🏷️', title: 'Header & Footer Text', desc: 'Custom text on every page — monospace font, centered, configured via Layout Settings.', category: 'pdf' },
-  { icon: '🎨', title: 'HTML Banner Upload', desc: 'Upload rich HTML header/footer banners for branded, professional-looking document exports.', category: 'pdf' },
-  { icon: '🕐', title: 'PDF Timestamp', desc: 'Automatic date/time stamp on every exported page. Toggle on/off from the toolbar.', category: 'pdf' },
-  { icon: '#️⃣', title: 'Page Numbers', desc: 'Auto page numbering — "current/total" in bottom-right corner of each page.', category: 'pdf' },
-  { icon: '🖨️', title: 'Print-Optimized Output', desc: 'Forced light mode, consistent line-height, overflow clipping, and break-inside-avoid for clean print output.', category: 'pdf' },
-
-  // ── Cloud & Auth ──
-  { icon: '☁️', title: 'Cloud Document Sync', desc: 'Save, sync, and snapshot documents to the cloud. Access from any device.', category: 'cloud' },
-  { icon: '🎭', title: 'Template Library', desc: 'Save layout settings as reusable templates. Load them for instant consistent formatting.', category: 'cloud' },
-  { icon: '🔐', title: 'User Authentication', desc: 'JWT-based auth with email set-password links. Secure sign-in unlocks cloud features.', category: 'cloud' },
-
-  // ── UI & Design ──
-  { icon: '🌗', title: 'Dark / Light Mode', desc: 'One-click theme toggle. Editor, preview, and modals adapt. PDF always exports in light mode.', category: 'ui' },
-  { icon: '↔️', title: 'Resizable Split Pane', desc: 'Drag to resize editor and preview (20–80%). Collapse editor to focus on preview. Mobile tab switching.', category: 'ui' },
-  { icon: '📊', title: 'Status Bar', desc: 'Live filename, unsaved indicator, line/word/character counts — all updating in real time.', category: 'ui' },
-  { icon: '💬', title: 'Toast Notifications', desc: 'Non-intrusive toasts for save, sync, load, and error feedback. Dismissible.', category: 'ui' },
-  { icon: '📱', title: 'Responsive Design', desc: 'Works on desktop, tablet, and mobile with adaptive toolbar, tab switching, and dynamic scaling.', category: 'ui' },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      </svg>
+    ),
+    title: 'Real-time WYSIWYG Preview',
+    desc: 'See your document exactly as it will appear when printed, with live updates as you type.'
+  },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+    title: 'Physical-page Layouts',
+    desc: 'Support for A4, Letter, and Legal formats with accurate page breaks and pagination.'
+  },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.172-1.172a4 4 0 115.656 5.656L17 13" />
+      </svg>
+    ),
+    title: 'Custom Branding',
+    desc: 'Upload your own HTML banners for professional headers and footers tailored to your brand.'
+  },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      </svg>
+    ),
+    title: 'Export PDF/Images',
+    desc: 'High-fidelity export to PDF with clickable links, proper metadata, and optimized file sizes.'
+  },
 ]
 
-const CATEGORIES = [
-  { id: null,    label: 'All',           count: FEATURES.length, desc: 'Everything the editor offers' },
-  { id: 'core',  label: 'Core Editor',   count: FEATURES.filter(f => f.category === 'core').length,  desc: 'Writing & editing essentials' },
-  { id: 'pdf',   label: 'PDF & Export',  count: FEATURES.filter(f => f.category === 'pdf').length,   desc: 'Layout, pagination, and export' },
-  { id: 'cloud', label: 'Cloud & Auth',  count: FEATURES.filter(f => f.category === 'cloud').length, desc: 'Sync, templates, and accounts' },
-  { id: 'ui',    label: 'UI & Design',   count: FEATURES.filter(f => f.category === 'ui').length,    desc: 'Theming, layout, and responsiveness' },
-] as const
+const STATS = [
+  { label: 'Documents Created', value: '10k+' },
+  { label: 'Active Users', value: '1M+' },
+  { label: 'Uptime', value: '99.9%' },
+  { label: 'Rating', value: '4.9/5' },
+]
 
-const CATEGORY_META: Record<string, { title: string; subtitle: string }> = {
-  core:  { title: 'Core Editor',  subtitle: 'The foundation — writing, editing, and Markdown processing' },
-  pdf:   { title: 'PDF & Export', subtitle: 'Page layout, pagination, and professional document export' },
-  cloud: { title: 'Cloud & Auth', subtitle: 'Sync documents to the cloud and manage your account' },
-  ui:    { title: 'UI & Design',  subtitle: 'Theming, responsive layout, and status feedback' },
-}
+const DOC_TYPES = [
+  { id: 'tech', label: 'Technical Doc', title: 'Technical Specifications', desc: 'Precision Markdown offers professional-grade formatting for developers and engineers.' },
+  { id: 'creative', label: 'Creative Writing', title: 'Storyboarding & Scripts', desc: 'A clean interface that lets your creativity flow without technical distractions.' },
+  { id: 'business', label: 'Business Reports', title: 'Annual Financial Overview', desc: 'Formal layouts and charts integration for your most important business data.' },
+  { id: 'whitepaper', label: 'White Papers', title: 'Decentralized Intelligence', desc: 'Academic-level document structure with citations and complex table support.' },
+]
 
-// ── Component ───────────────────────────────────────────────────────────────
-export default function DocsPage({ onGoToEditor }: { onGoToEditor: () => void }) {
-  const [search, setSearch] = useState('')
-  const [activeCategory, setActiveCategory] = useState<string | null>(null)
 
-  useEffect(() => {
-    document.documentElement.classList.add('dark')
-    return () => { document.documentElement.classList.remove('dark') }
-  }, [])
+export default function DocsPage({ onGoToEditor, onGoToDocs, theme, onToggleTheme }: { onGoToEditor: () => void, onGoToDocs: () => void, theme: 'light' | 'dark', onToggleTheme: () => void }) {
+  const [activeDocType, setActiveDocType] = useState(DOC_TYPES[0])
+  const [activeModal, setActiveModal] = useState<'privacy' | 'terms' | 'about' | null>(null)
 
-  const filtered = FEATURES.filter((f) => {
-    const matchesSearch = !search || f.title.toLowerCase().includes(search.toLowerCase()) || f.desc.toLowerCase().includes(search.toLowerCase())
-    const matchesCategory = !activeCategory || f.category === activeCategory
-    return matchesSearch && matchesCategory
-  })
-
-  // Group features by category for section headings
-  const groupedByCategory = activeCategory
-    ? { [activeCategory]: filtered }
-    : filtered.reduce<Record<string, Feature[]>>((acc, f) => {
-        ;(acc[f.category] ??= []).push(f)
-        return acc
-      }, {})
+  const renderModalContent = () => {
+    switch (activeModal) {
+      case 'privacy':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Privacy Policy</h2>
+            <div className="space-y-4 text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <p>Your privacy is paramount. BikDocs is designed as a local-first application, meaning your documents and data are stored directly on your device whenever possible.</p>
+              <p>We do not sell, rent, or share your personal information with third parties. Any cloud-based features (like sharing or syncing) are explicitly opted-in and encrypted to ensure your work remains yours.</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Primary storage is local to your browser.</li>
+                <li>No tracking or invasive analytics are used.</li>
+                <li>You maintain full ownership of all exported files.</li>
+              </ul>
+            </div>
+          </div>
+        )
+      case 'terms':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Terms of Service</h2>
+            <div className="space-y-4 text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <p>By using BikDocs, you agree to the following simple terms:</p>
+              <ul className="list-decimal pl-6 space-y-2">
+                <li><strong>Usage</strong>: The platform is provided "as is" for professional and personal documentation purposes.</li>
+                <li><strong>Responsibility</strong>: You are responsible for the content you create and for maintaining backups of your critical documents.</li>
+                <li><strong>Liability</strong>: While we strive for 100% accuracy in physical layouts, BikDocs is not liable for any discrepancies in printed or exported results.</li>
+              </ul>
+            </div>
+          </div>
+        )
+      case 'about':
+        return (
+          <div className="space-y-6 text-center">
+            <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-3xl font-bold mx-auto mb-6 shadow-xl shadow-indigo-500/20">B</div>
+            <h2 className="text-2xl font-bold">About BikDocs</h2>
+            <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              BikDocs was born out of frustration with existing Markdown editors that failed to understand physical page constraints. We believe that writing in plain text shouldn't mean sacrificing the beauty and precision of the final printed document.
+            </p>
+            <p className="text-sm text-zinc-500 mt-8">Version 2.0.4 • Built for Professionals</p>
+          </div>
+        )
+      default:
+        return null
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-[#08090d] text-gray-100 font-[Inter,system-ui,sans-serif] relative">
-      {/* Noise texture overlay */}
-      <div
-        className="fixed inset-0 z-0 pointer-events-none opacity-[0.025]"
-        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")', backgroundRepeat: 'repeat', backgroundSize: '128px 128px' }}
-      />
+    <div className="min-h-screen bg-white dark:bg-[#0b0d12] text-zinc-900 dark:text-zinc-100 font-[Inter,system-ui,sans-serif] selection:bg-indigo-100 dark:selection:bg-indigo-900/30">
+      {/* Background Texture */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        {/* Main Grid */}
+        <div
+          className="absolute inset-0 opacity-[0.4] dark:opacity-[0.1]"
+          style={{
+            backgroundImage: `linear-gradient(${theme === 'light' ? '#e5e7eb' : 'rgba(255,255,255,0.2)'} 1px, transparent 1px), linear-gradient(90deg, ${theme === 'light' ? '#e5e7eb' : 'rgba(255,255,255,0.2)'} 1px, transparent 1px)`,
+            backgroundSize: '40px 40px'
+          }}
+        />
 
-      {/* Hero */}
-      <header className="relative overflow-hidden z-10">
-        {/* Subtle radial glow */}
-        <div className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full bg-gradient-radial from-blue-500/[0.07] to-transparent blur-[80px]" />
-        <div className="absolute top-[-100px] right-[10%] w-[400px] h-[400px] rounded-full bg-purple-500/[0.04] blur-[100px]" />
+        {/* Refined Central Glows */}
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-indigo-500/[0.08] dark:bg-indigo-500/[0.15] rounded-full blur-[120px]" />
+        <div className="absolute top-[5%] left-[45%] w-[400px] h-[400px] bg-purple-500/[0.05] dark:bg-purple-500/[0.1] rounded-full blur-[100px]" />
 
-        <div className="relative max-w-5xl mx-auto px-6 pt-10 pb-14">
-          <nav className="flex items-center justify-between mb-20">
+        {/* Bottom fade for the grid */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-white dark:via-transparent dark:to-[#0b0d12]" />
+      </div>
+
+      {/* Nav */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-[#0b0d12]/70 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800/50">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/20">
+              B
+            </div>
+            <span className="font-bold text-lg tracking-tight">BikDocs</span>
+          </div>
+
+          <div className="hidden md:flex items-center gap-8">
             <button
-              onClick={() => { setSearch(''); setActiveCategory(null); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-              className="text-[17px] font-semibold text-white/90 tracking-tight cursor-pointer bg-transparent border-none hover:text-white transition-colors duration-200"
+              onClick={onGoToDocs}
+              className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
             >
-              BikDocs
+              Features
+            </button>
+            <div className="relative group/link">
+              <span className="text-sm font-medium text-zinc-400 dark:text-zinc-600 cursor-not-allowed">Templates</span>
+              <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 text-[9px] font-bold uppercase tracking-wider opacity-0 group-hover/link:opacity-100 transition-all duration-200 whitespace-nowrap shadow-xl">
+                Coming Soon
+              </span>
+            </div>
+            <div className="relative group/link">
+              <span className="text-sm font-medium text-zinc-400 dark:text-zinc-600 cursor-not-allowed">Pricing</span>
+              <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 text-[9px] font-bold uppercase tracking-wider opacity-0 group-hover/link:opacity-100 transition-all duration-200 whitespace-nowrap shadow-xl">
+                Coming Soon
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={onToggleTheme}
+              className="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition-colors"
+            >
+              {theme === 'light' ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              )}
             </button>
             <button
               onClick={onGoToEditor}
-              className="group px-5 py-2 rounded-full bg-white/[0.06] border border-white/[0.08] text-[13px] font-medium text-gray-400 hover:text-white hover:bg-white/[0.1] hover:border-white/[0.15] transition-all duration-300 cursor-pointer backdrop-blur-sm"
+              className="px-5 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-lg shadow-indigo-500/25 transition-all active:scale-95"
             >
-              Open Editor
-              <span className="inline-block ml-1.5 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-300">→</span>
+              Start Writing
             </button>
-          </nav>
-
-          <div className="text-center max-w-2xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/[0.08] border border-blue-400/[0.12] text-blue-300/80 text-[11px] font-semibold uppercase tracking-[0.15em] mb-5">
-              <span className="w-1 h-1 rounded-full bg-blue-400/80 animate-pulse" />
-              Documentation
-            </div>
-            <h1 className="text-[2.75rem] md:text-[3.25rem] font-extrabold text-white/95 tracking-[-0.02em] leading-[1.1] mb-4">
-              Every feature,{' '}
-              <span className="bg-gradient-to-r from-blue-300 via-violet-300 to-purple-300 bg-clip-text text-transparent">
-                explained
-              </span>
-            </h1>
-            <p className="text-[15px] text-gray-500 max-w-lg mx-auto leading-relaxed font-normal">
-              A complete Markdown editor with live preview, PDF export, cloud sync, and powerful layout controls.
-            </p>
           </div>
         </div>
-      </header>
+      </nav>
 
-      {/* Sticky Filters */}
-      <div className="sticky top-0 z-40 bg-[#08090d]/80 backdrop-blur-2xl border-b border-white/[0.04]">
-        <div className="max-w-5xl mx-auto px-6 py-3.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          {/* Search */}
-          <div className="relative flex-1 max-w-sm">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search features..."
-              className="w-full bg-white/[0.04] border border-white/[0.06] rounded-full pl-9 pr-4 py-2 text-[13px] text-gray-300 placeholder:text-gray-600 focus:outline-none focus:bg-white/[0.06] focus:border-white/[0.12] transition-all duration-200"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            {!search && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-gray-600 font-medium">
-                {filtered.length} features
-              </span>
-            )}
+      <main className="relative z-10 pt-32">
+        {/* Hero */}
+        <section className="max-w-5xl mx-auto px-6 text-center mb-24">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 text-[11px] font-bold uppercase tracking-wider mb-8 animate-fade-in">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+            Beta Release 2.0
           </div>
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.05] mb-8 text-zinc-900 dark:text-white">
+            Precision Markdown, <br />
+            <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent animate-gradient-x">
+              Physical Results.
+            </span>
+          </h1>
+          <p className="text-lg md:text-xl text-zinc-500 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-12">
+            The only truly physical Markdown editor for professionals who demand perfect layouts and high-fidelity PDF results. Every pixel matters.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={onGoToEditor}
+              className="w-full sm:w-auto px-8 py-4 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-xl shadow-indigo-500/20 transition-all hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center gap-2 group"
+            >
+              Start Writing Now
+              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </button>
+            <button
+              onClick={onGoToDocs}
+              className="w-full sm:w-auto px-8 py-4 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white font-bold text-lg transition-all flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+              View Documentation
+            </button>
+          </div>
+        </section>
 
-          {/* Category Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.label}
-                className={`px-3.5 py-1.5 rounded-full text-[11px] font-semibold tracking-wide whitespace-nowrap transition-all duration-200 border cursor-pointer ${
-                  activeCategory === cat.id
-                    ? 'bg-white/[0.1] text-white border-white/[0.12] shadow-[0_0_12px_rgba(255,255,255,0.04)]'
-                    : 'bg-transparent text-gray-500 border-transparent hover:text-gray-300 hover:bg-white/[0.04]'
-                }`}
-                onClick={() => setActiveCategory(cat.id)}
-              >
-                {cat.label}
-                <span className={`ml-1.5 text-[10px] ${activeCategory === cat.id ? 'text-gray-400' : 'text-gray-700'}`}>
-                  {cat.count}
-                </span>
-              </button>
+        {/* Mockup */}
+        <section className="max-w-6xl mx-auto px-6 mb-32 relative">
+          <div className="absolute inset-0 bg-indigo-500/10 blur-[120px] rounded-full -z-10" />
+          <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-2xl overflow-hidden backdrop-blur-sm group">
+            {/* Browser Header */}
+            <div className="h-12 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80 flex items-center px-6 gap-2">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-red-400" />
+                <div className="w-3 h-3 rounded-full bg-amber-400" />
+                <div className="w-3 h-3 rounded-full bg-green-400" />
+              </div>
+              <div className="mx-auto bg-zinc-200 dark:bg-zinc-800 rounded-lg px-8 py-1 text-[10px] text-zinc-500 font-medium">
+                bikdocs.in
+              </div>
+            </div>
+            {/* Editor Content Mockup */}
+            <div className="grid grid-cols-1 md:grid-cols-2 h-[400px] md:h-[600px]">
+              <div className="hidden md:block border-r border-zinc-200 dark:border-zinc-800 p-8 font-mono text-sm text-indigo-600 dark:text-indigo-400">
+                <div className="opacity-50 space-y-2">
+                  <div># Project Proposal</div>
+                  <div className="text-zinc-400 dark:text-zinc-600 mt-4">## Executive Summary</div>
+                  <div className="text-zinc-400 dark:text-zinc-600">This document outlines the strategic...</div>
+                </div>
+              </div>
+              <div className="p-4 md:p-8 bg-zinc-50 dark:bg-zinc-950/50 flex items-center justify-center overflow-hidden">
+                <div className="w-full max-w-sm mx-auto bg-white dark:bg-zinc-900 shadow-lg border border-zinc-200 dark:border-zinc-800 aspect-[1/1.41] p-6 md:p-8 transform scale-90 md:scale-100">
+                  <h1 className="text-xl md:text-2xl font-bold mb-4">Project Proposal</h1>
+                  <h2 className="text-md md:text-lg font-semibold mb-2">Executive Summary</h2>
+                  <p className="text-[10px] md:text-[12px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    This document outlines the strategic initiatives for the upcoming fiscal year, focusing on market expansion and digital transformation.
+                  </p>
+                  <div className="mt-8 pt-4 border-t border-zinc-100 dark:border-zinc-800 text-[8px] md:text-[10px] text-zinc-400">
+                    Proprietary & Confidential • Page 1
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Features Grid */}
+        <section className="max-w-7xl mx-auto px-6 mb-40">
+          <div className="text-center mb-16">
+            <h2 className="text-sm font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-4">Core Benefits</h2>
+            <h3 className="text-3xl md:text-4xl font-extrabold text-zinc-900 dark:text-white">Engineered for Document Perfection</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {FEATURES.map((f, i) => (
+              <div key={i} className="group p-8 rounded-3xl border border-zinc-100 dark:border-zinc-800/50 bg-white dark:bg-zinc-900/30 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-all hover:-translate-y-2">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  {f.icon}
+                </div>
+                <h4 className="font-bold text-lg mb-4 text-zinc-900 dark:text-white">{f.title}</h4>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                  {f.desc}
+                </p>
+              </div>
             ))}
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Feature Sections */}
-      <main className="max-w-5xl mx-auto px-6 py-10 relative z-10">
-        {Object.entries(groupedByCategory).map(([catId, features]) => {
-          const meta = CATEGORY_META[catId]
-          return (
-            <section key={catId} className="mb-14 last:mb-0">
-              {/* Section heading */}
-              {meta && (
-                <div className="mb-6 flex items-baseline gap-3">
-                  <h2 className="text-[13px] font-bold text-white/70 uppercase tracking-[0.12em]">{meta.title}</h2>
-                  <span className="text-[12px] text-gray-600 font-normal hidden sm:inline">— {meta.subtitle}</span>
-                </div>
-              )}
-
-              {/* Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {features.map((feature) => (
-                  <div
-                    key={feature.title}
-                    className="group relative rounded-xl border border-white/[0.04] bg-white/[0.015] p-5 hover:bg-white/[0.035] hover:border-white/[0.08] transition-all duration-300 cursor-default backdrop-blur-[2px]"
-                  >
-                    {/* Hover glow */}
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-
-                    <div className="relative flex items-start gap-3.5">
-                      {/* Icon pill */}
-                      <div className="shrink-0 w-10 h-10 rounded-[10px] bg-white/[0.05] border border-white/[0.06] flex items-center justify-center text-lg backdrop-blur-sm group-hover:bg-white/[0.08] group-hover:border-white/[0.1] group-hover:scale-105 transition-all duration-300 shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
-                        {feature.icon}
-                      </div>
-                      <div className="min-w-0 pt-0.5">
-                        <h3 className="text-[13px] font-semibold text-white/90 mb-1 leading-snug tracking-[-0.01em]">{feature.title}</h3>
-                        <p className="text-[12px] text-gray-500 leading-[1.6] font-normal">{feature.desc}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )
-        })}
-
-        {filtered.length === 0 && (
-          <div className="text-center py-24">
-            <p className="text-gray-600 text-sm">No features match your search.</p>
+        {/* High Fidelity Section */}
+        <section className="max-w-7xl mx-auto px-6 mb-40 flex flex-col md:flex-row items-center gap-20">
+          <div className="flex-1">
+            <h2 className="text-4xl md:text-5xl font-extrabold leading-tight mb-8 text-zinc-900 dark:text-white">
+              Write in plain text, <br />
+              deliver in high-fidelity.
+            </h2>
+            <p className="text-lg text-zinc-500 dark:text-zinc-400 mb-10 leading-relaxed">
+              Stop fighting with Word processors. Use the simplicity of Markdown to structure your thoughts, and let our engine handle the complex layout logic.
+            </p>
+            <ul className="space-y-4">
+              {[
+                'Export to production-ready PDF in one click',
+                'Native support for SVGs and high-res images',
+                'Perfect table rendering with auto-break support',
+                'Consistent typography across all devices'
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-3 text-zinc-600 dark:text-zinc-300 font-medium">
+                  <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
-        )}
+          <div className="flex-1 w-full scale-110 md:scale-100">
+            <div className="relative aspect-square bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full flex items-center justify-center">
+              <div className="absolute inset-0 bg-white/20 dark:bg-transparent backdrop-blur-3xl rounded-full border border-white dark:border-zinc-800" />
+              <div className="relative w-2/3 h-3/4 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 transform rotate-3 p-8 flex flex-col">
+                <div className="w-full h-1 bg-zinc-100 dark:bg-zinc-800 mb-2" />
+                <div className="w-2/3 h-1 bg-zinc-100 dark:bg-zinc-800 mb-8" />
+                <div className="flex-1 overflow-hidden">
+                  <div className="w-full h-full bg-zinc-50 dark:bg-zinc-950/50 rounded-lg flex items-center justify-center border border-dashed border-zinc-200 dark:border-zinc-800">
+                    <svg className="w-12 h-12 text-zinc-200 dark:text-zinc-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Stats */}
-        <div className="mt-16 pt-10 border-t border-white/[0.04]">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { label: 'Features', value: FEATURES.length.toString() },
-              { label: 'Components', value: '8' },
-              { label: 'API Modules', value: '3' },
-              { label: 'Export Formats', value: '2' },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-2xl font-bold text-white/80 tracking-tight">{stat.value}</div>
-                <div className="text-[10px] font-semibold text-gray-600 uppercase tracking-[0.15em] mt-0.5">{stat.label}</div>
-              </div>
-            ))}
+        <section className="border-t border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-white/[0.02] mb-40">
+          <div className="max-w-7xl mx-auto px-6 py-20">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+              {STATS.map((s, i) => (
+                <div key={i}>
+                  <div className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white mb-2">{s.value}</div>
+                  <div className="text-sm font-bold text-zinc-500 dark:text-zinc-500 uppercase tracking-widest">{s.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </section>
+
+        {/* Built for every doc type */}
+        <section className="max-w-6xl mx-auto px-6 mb-40">
+          <div className="text-center mb-16">
+            <h3 className="text-3xl md:text-4xl font-extrabold text-zinc-900 dark:text-white mb-4">Built for every document type</h3>
+            <p className="text-zinc-500 dark:text-zinc-400">Flexibility without compromise for businesses, creatives, and technical writers.</p>
+          </div>
+          <div className="flex flex-col md:flex-row gap-8 min-h-[400px]">
+            <div className="w-full md:w-72 flex md:flex-col gap-2 overflow-x-auto md:overflow-visible no-scrollbar pb-4 md:pb-0">
+              {DOC_TYPES.map((type) => (
+                <button
+                  key={type.id}
+                  onClick={() => setActiveDocType(type)}
+                  className={`flex-1 text-left px-6 py-4 rounded-2xl text-sm font-bold transition-all whitespace-nowrap ${activeDocType.id === type.id
+                      ? 'bg-white dark:bg-zinc-800 shadow-xl shadow-zinc-200/50 dark:shadow-none border border-zinc-200 dark:border-zinc-700 text-indigo-600 dark:text-white'
+                      : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
+                    }`}
+                >
+                  {type.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex-1 bg-zinc-50 dark:bg-zinc-900/50 rounded-[32px] border border-zinc-100 dark:border-zinc-800 p-8 md:p-12 animate-in fade-in slide-in-from-right-4 duration-500">
+              <h4 className="text-2xl font-extrabold mb-4 text-zinc-900 dark:text-white">{activeDocType.title}</h4>
+              <p className="text-lg text-zinc-500 dark:text-zinc-400 leading-relaxed mb-10">
+                {activeDocType.desc}
+              </p>
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl p-6 shadow-inner border border-zinc-100 dark:border-zinc-800 font-mono text-sm overflow-x-auto">
+                <div className="flex gap-2 mb-4">
+                  <div className="w-2.5 h-2.5 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+                </div>
+                <div className="space-y-2 opacity-80">
+                  <div className="text-indigo-500">export default function</div>
+                  <div className="pl-4 text-zinc-400">return document.create(&apos;{activeDocType.id}&apos;);</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        {/* CTA Banner */}
+        <section className="max-w-7xl mx-auto px-6 mb-24">
+          <div className="rounded-[40px] bg-indigo-600 p-12 md:p-24 text-center text-white relative overflow-hidden shadow-2xl shadow-indigo-500/20 group">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_white_0.1,_transparent_0)] bg-[size:40px_40px] opacity-10" />
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-400/20 to-transparent" />
+
+            <h3 className="text-4xl md:text-6xl font-black mb-8 relative z-10 leading-tight">
+              Ready to upgrade your <br className="hidden md:block" /> document workflow?
+            </h3>
+            <p className="text-indigo-100 text-lg md:text-xl max-w-2xl mx-auto mb-12 relative z-10 opacity-90">
+              Join thousands of writers who have already made the switch to the physical Markdown experience.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
+              <button
+                onClick={onGoToEditor}
+                className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-white text-indigo-600 font-bold text-lg shadow-xl hover:bg-indigo-50 transition-all hover:-translate-y-1 active:scale-95"
+              >
+                Start Writing for Free
+              </button>
+              <button className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-indigo-500 text-white font-bold text-lg hover:bg-indigo-400 transition-all border border-indigo-400">
+                Contact Sales
+              </button>
+            </div>
+          </div>
+        </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-white/[0.04] py-7 mt-6 relative z-10">
-        <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-[11px] text-gray-700 font-medium">BikDocs — Desktop Markdown Editor</p>
-          <div className="flex items-center gap-5">
-            <a href="https://github.com/bikramAuto/gen-pdf-ui" target="_blank" rel="noopener noreferrer" className="text-[11px] text-gray-600 hover:text-gray-400 transition-colors duration-200 font-medium">
-              GitHub
-            </a>
-            <button onClick={onGoToEditor} className="text-[11px] text-gray-600 hover:text-gray-400 transition-colors duration-200 cursor-pointer bg-transparent border-none font-medium">
-              Editor
-            </button>
+      <footer className="border-t border-zinc-100 dark:border-zinc-800 py-20 relative z-10 bg-white dark:bg-[#0b0d12]">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-20">
+            <div className="col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold">B</div>
+                <span className="font-bold text-lg tracking-tight">BikDocs</span>
+              </div>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-xs">
+                The premium physical Markdown editor for professionals who demand results.
+              </p>
+            </div>
+            <div>
+              <h5 className="font-bold text-sm mb-6 uppercase tracking-widest text-zinc-400">Product</h5>
+              <ul className="space-y-4">
+                <li><a href="#" className="text-sm text-zinc-500 hover:text-indigo-600 dark:hover:text-white transition-colors">Editor</a></li>
+                <li className="flex items-center gap-2">
+                  <span className="text-sm text-zinc-400 dark:text-zinc-600 cursor-not-allowed">Pricing</span>
+                  <span className="px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800/50 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-tighter">Soon</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-sm text-zinc-400 dark:text-zinc-600 cursor-not-allowed">Templates</span>
+                  <span className="px-1.5 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800/50 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-tighter">Soon</span>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="font-bold text-sm mb-6 uppercase tracking-widest text-zinc-400">Resources</h5>
+              <ul className="space-y-4">
+                <li>
+                  <button
+                    onClick={onGoToDocs}
+                    className="text-sm text-zinc-500 hover:text-indigo-600 dark:hover:text-white transition-colors"
+                  >
+                    Documentation
+                  </button>
+                </li>
+                <li><a href="#" className="text-sm text-zinc-500 hover:text-indigo-600 dark:hover:text-white transition-colors">Help Center</a></li>
+                <li><a href="#" className="text-sm text-zinc-500 hover:text-indigo-600 dark:hover:text-white transition-colors">API Ref</a></li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="font-bold text-sm mb-6 uppercase tracking-widest text-zinc-400">Company</h5>
+              <ul className="space-y-4">
+                <li>
+                  <button
+                    onClick={() => setActiveModal('about')}
+                    className="text-sm text-zinc-500 hover:text-indigo-600 dark:hover:text-white transition-colors"
+                  >
+                    About
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setActiveModal('privacy')}
+                    className="text-sm text-zinc-500 hover:text-indigo-600 dark:hover:text-white transition-colors"
+                  >
+                    Privacy
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setActiveModal('terms')}
+                    className="text-sm text-zinc-500 hover:text-indigo-600 dark:hover:text-white transition-colors"
+                  >
+                    Terms
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-10 border-t border-zinc-100 dark:border-zinc-800">
+            <p className="text-sm text-zinc-400">&copy; 2026 BikDocs. All rights reserved.</p>
+            <div className="flex items-center gap-6">
+              <a href="#" className="text-zinc-400 hover:text-indigo-600 transition-colors">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" /></svg>
+              </a>
+              <a href="#" className="text-zinc-400 hover:text-indigo-600 transition-colors">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" /></svg>
+              </a>
+            </div>
           </div>
         </div>
       </footer>
+      <Modal
+        isOpen={activeModal !== null}
+        onClose={() => setActiveModal(null)}
+        maxWidthClass={activeModal === 'about' ? 'max-w-[400px]' : 'max-w-[500px]'}
+      >
+        {renderModalContent()}
+      </Modal>
     </div>
   )
 }
