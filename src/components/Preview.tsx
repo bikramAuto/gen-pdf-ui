@@ -8,18 +8,6 @@ import { getBlobUrl } from '../utils/imageStorage'
 import { PDFConfig } from '../types/pdf'
 import { calculatePagination, formatHeights, formatWidths, waitForFonts, waitForImages } from '../utils/pdfUtils'
 
-// const [isPrintMode, setIsPrintMode] = useState(false)
-
-// useEffect(() => {
-//   const media = window.matchMedia('print')
-
-//   const listener = () => setIsPrintMode(media.matches)
-
-//   media.addEventListener('change', listener)
-//   setIsPrintMode(media.matches)
-
-//   return () => media.removeEventListener('change', listener)
-// }, [])
 
 interface PreviewProps {
   content: string
@@ -87,7 +75,7 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
   const fullHtml = useMemo(() => {
     // Configure marked with a custom renderer for images
     const renderer = new marked.Renderer();
-    
+
     // Support highlight.js in code blocks
     renderer.code = (code: string, lang: string | undefined) => {
       const language = lang && hljs.getLanguage(lang) ? lang : 'plaintext';
@@ -102,7 +90,7 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
     };
 
     const raw = marked.parse(content, { renderer, async: false }) as string;
-    
+
     return DOMPurify.sanitize(raw, {
       ALLOWED_TAGS: [
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -322,9 +310,9 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
               />
             )}
             {showPageNumbers && (
-              <div 
+              <div
                 className="absolute right-0 text-[10px] text-gray-400 font-mono z-10"
-                style={{ 
+                style={{
                   bottom: `calc(${pdfConfig.margin}in - 20px)`,
                   right: `${pdfConfig.margin}in`
                 }}

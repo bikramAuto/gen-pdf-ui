@@ -7,7 +7,7 @@ import AuthModal from './components/AuthModal'
 import SetPassword from './components/SetPassword'
 import { ToastContainer, useToast } from './components/Toast'
 import { User } from './api/users'
-import { createTemplate, updateTemplate, getTemplates, getTemplateById, SavedTemplate, TemplatePayload } from './api/templates'
+import { createTemplate, updateTemplate, getTemplates, getTemplateById, SavedTemplate, TemplatePayload, TemplateListItem } from './api/templates'
 import { createDocument, updateDocument, STATUS, DocumentPayload, getDocuments, DocumentListItem, FullDocument } from './api/documents'
 import { compressImage, storeImage, deleteImage, getAllHashes } from './utils/imageStorage'
 import { PDFConfig, PDFFormat, PDFOrientation } from './types/pdf'
@@ -75,13 +75,22 @@ export default function App({ onGoToDocs, theme, onToggleTheme }: { onGoToDocs?:
 
   // Saved Templates Modal State
   const [isTemplatesModalOpen, setIsTemplatesModalOpen] = useState(false)
-  const [savedTemplates, setSavedTemplates] = useState<SavedTemplate[]>([])
+  const [savedTemplates, setSavedTemplates] = useState<TemplateListItem[]>([])
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
+  const [templatePage, setTemplatePage] = useState(1)
+  const [templateTotal, setTemplateTotal] = useState(0)
+  const [templateSearch, setTemplateSearch] = useState('')
+  const TEMPLATE_LIMIT = 10
 
   // Saved Documents Modal State
   const [isDocsModalOpen, setIsDocsModalOpen] = useState(false)
   const [savedDocs, setSavedDocs] = useState<DocumentListItem[]>([])
   const [isLoadingDocs, setIsLoadingDocs] = useState(false)
+  const [docPage, setDocPage] = useState(1)
+  const [docTotal, setDocTotal] = useState(0)
+  const [docSearch, setDocSearch] = useState('')
+  const [docHasMore, setDocHasMore] = useState(true)
+  const DOC_LIMIT = 10
 
   // Toast
   const { toasts, showToast, dismissToast } = useToast()
@@ -350,13 +359,7 @@ export default function App({ onGoToDocs, theme, onToggleTheme }: { onGoToDocs?:
     return templateLayout
   }, [buildLayout])
 
-  const handleSave = useCallback(async () => {
-    if (!user) return
-    // Always prompt for document title (allows renaming on every save)
-    setDocNameInput(fileName.replace(/\.md$/i, ''))
-    setPendingDocAction('save')
-    setIsDocNameModalOpen(true)
-  }, [user, fileName])
+
 
   const handleDocNameConfirm = useCallback(async (name: string) => {
     const trimmed = name.trim()
@@ -396,11 +399,27 @@ export default function App({ onGoToDocs, theme, onToggleTheme }: { onGoToDocs?:
       setFileName(finalFileName)
       setIsSaving(true)
       try {
+        let activeTemplateId = templateId;
+        
+        // If template is unsaved/not-snapshotted, create it first
+        if (!activeTemplateId) {
+          const payload: TemplatePayload = {
+            name: trimmed, // set template name to document name
+            layout: buildTemplateLayout()
+          }
+          const res = await createTemplate(user.id, payload)
+          if (res.id) {
+            activeTemplateId = res.id
+            setTemplateId(res.id)
+            setTemplateName(trimmed)
+          }
+        }
+
         const docPayload: DocumentPayload = {
           userId: user.id,
           title: trimmed,
-          content: content.endsWith('.md') ? content : content + '.md',
-          layoutId: templateId || '', // reference the current active template
+          content: content,
+          layoutId: activeTemplateId || '', // reference the current active template
           status: STATUS.DRAFT,
         }
 
@@ -421,23 +440,46 @@ export default function App({ onGoToDocs, theme, onToggleTheme }: { onGoToDocs?:
         setIsSaving(false)
       }
     }
-  }, [pendingDocAction, user, templateId, documentId, content, showToast])
+  }, [pendingDocAction, user, templateId, documentId, content, buildTemplateLayout, showToast])
+
+  const handleRenameDocument = useCallback(async (newName: string) => {
+    const trimmed = newName.trim()
+    if (!trimmed) return
+    const finalFileName = trimmed.endsWith('.md') ? trimmed : `${trimmed}.md`
+    setFileName(finalFileName)
+
+    if (user && documentId) {
+      try {
+        const docPayload: DocumentPayload = {
+          userId: user.id,
+          title: trimmed,
+          content: content,
+          layoutId: templateId || '',
+          status: STATUS.DRAFT,
+        }
+        await updateDocument(user.id, documentId, docPayload)
+        showToast('Document renamed!', 'success')
+      } catch (err) {
+        console.error('Rename failed:', err)
+      }
+    }
+  }, [user, documentId, content, templateId, showToast])
 
   const handleSaveDocument = useCallback(async () => {
     if (!user) return
-    // Prompt for title before syncing
-    setDocNameInput(fileName.replace(/\.md$/i, ''))
+    // Directly save with current fileName (no modal)
+    const name = fileName.replace(/\.md$/i, '')
     setPendingDocAction('save')
-    setIsDocNameModalOpen(true)
-  }, [user, fileName])
+    handleDocNameConfirm(name)
+  }, [user, fileName, handleDocNameConfirm])
 
   const handleSaveDocumentSnapshot = useCallback(async () => {
     if (!user) return
-    // Prompt for a NEW title for the snapshot
-    setDocNameInput(fileName.replace(/\.md$/i, '') + ' Copy')
+    // Directly save as snapshot with " Copy" suffix (no modal)
+    const name = fileName.replace(/\.md$/i, '') + ' Copy'
     setPendingDocAction('snapshot')
-    setIsDocNameModalOpen(true)
-  }, [user, fileName])
+    handleDocNameConfirm(name)
+  }, [user, fileName, handleDocNameConfirm])
 
   const handleSaveTemplate = useCallback(async () => {
     if (!user || !templateId) return
@@ -463,44 +505,52 @@ export default function App({ onGoToDocs, theme, onToggleTheme }: { onGoToDocs?:
     setIsSaveAsModalOpen(true)
   }, [user, fileName])
 
-  const handleOpenTemplates = useCallback(async () => {
+  const handleOpenTemplates = useCallback(async (page: number = 1) => {
     if (!user) return
     setIsTemplatesModalOpen(true)
     setIsLoadingTemplates(true)
     try {
-      const result = await getTemplates(user.id) as any
+      const result = await getTemplates(user.id, page, TEMPLATE_LIMIT)
       const templates = Array.isArray(result) ? result : Array.isArray(result?.data) ? result.data : []
       setSavedTemplates(templates)
+      setTemplatePage(result.page || page)
+      setTemplateTotal(result.total || 0)
     } catch (err) {
       console.error('Failed to fetch templates:', err)
-      // Global error handler will show the message
       setSavedTemplates([])
     } finally {
       setIsLoadingTemplates(false)
     }
-  }, [user, showToast])
+  }, [user])
 
-  const handleOpenDocuments = useCallback(async () => {
+  const handleOpenDocuments = useCallback(async (page: number = 1) => {
     if (!user) return
     setIsDocsModalOpen(true)
     setIsLoadingDocs(true)
     try {
-      const result = await getDocuments(user.id)
-      setSavedDocs(result as DocumentListItem[])
+      const result = await getDocuments(user.id, undefined, page, DOC_LIMIT)
+      const docs = Array.isArray(result) ? result : (result?.data || [])
+      setSavedDocs(docs as DocumentListItem[])
+      setDocPage(page)
+      if (!Array.isArray(result)) {
+        setDocTotal(result.total || 0)
+        setDocHasMore(page * DOC_LIMIT < result.total)
+      } else {
+        setDocHasMore(result.length === DOC_LIMIT)
+      }
     } catch (err) {
       console.error('Failed to fetch documents:', err)
-      // Global error handler will show the message
       setSavedDocs([])
     } finally {
       setIsLoadingDocs(false)
     }
-  }, [user, showToast])
+  }, [user])
 
   const handleLoadDocument = useCallback(async (doc: DocumentListItem) => {
     if (!user) return
     try {
       const result = await getDocuments(user.id, doc.id)
-      const fullDoc = result[0] as FullDocument
+      const fullDoc = (Array.isArray(result) ? result[0] : result.data?.[0]) as FullDocument
       if (!fullDoc) return
 
       // Load Document Data
@@ -539,7 +589,7 @@ export default function App({ onGoToDocs, theme, onToggleTheme }: { onGoToDocs?:
     }
   }, [user, showToast])
 
-  const handleLoadTemplate = useCallback(async (pref: SavedTemplate) => {
+  const handleLoadTemplate = useCallback(async (pref: TemplateListItem) => {
     if (!user) return
     try {
       const response = await getTemplateById(user.id, pref.id) as any
@@ -834,6 +884,7 @@ export default function App({ onGoToDocs, theme, onToggleTheme }: { onGoToDocs?:
             onOpenTemplates={handleOpenTemplates}
             onOpenDocuments={handleOpenDocuments}
             onOpenLayout={() => setIsLayoutModalOpen(true)}
+            onRename={handleRenameDocument}
           />
         </div>
         <div
@@ -1051,6 +1102,21 @@ export default function App({ onGoToDocs, theme, onToggleTheme }: { onGoToDocs?:
           <h3 className="text-[16px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Saved templates</h3>
           <p className="text-[13px] text-zinc-500 dark:text-zinc-400 font-medium">Applied layout settings to current document</p>
         </div>
+
+        {/* Search Bar */}
+        <div className="relative mb-4 group">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-900 dark:group-focus-within:text-zinc-100 transition-colors">
+            <IconSearch size={14} />
+          </div>
+          <input
+            type="text"
+            placeholder="Search templates..."
+            className="premium-input w-full pl-10 h-10 text-[13px]"
+            value={templateSearch}
+            onChange={(e) => setTemplateSearch(e.target.value)}
+          />
+        </div>
+
         <div className="overflow-y-auto pr-1 flex-1 min-h-[50vh] custom-scrollbar">
           {isLoadingTemplates ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
@@ -1084,6 +1150,34 @@ export default function App({ onGoToDocs, theme, onToggleTheme }: { onGoToDocs?:
             </div>
           )}
         </div>
+
+        {/* Pagination Footer */}
+        {templateTotal > TEMPLATE_LIMIT && (
+          <div className="flex items-center justify-between pt-4 mt-2 border-t border-zinc-100 dark:border-white/[0.05]">
+            <button
+              className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/[0.05] disabled:opacity-30 disabled:pointer-events-none transition-colors group"
+              onClick={() => handleOpenTemplates(templatePage - 1)}
+              disabled={templatePage <= 1}
+              title="Previous Page"
+            >
+              <IconChevronLeft size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100" />
+            </button>
+            <div className="flex flex-col items-center gap-0.5">
+              <span className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Page</span>
+              <span className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 translate-y-[-1px]">
+                {templatePage} <span className="text-zinc-300 dark:text-zinc-700 mx-1 font-light">/</span> {Math.ceil(templateTotal / TEMPLATE_LIMIT)}
+              </span>
+            </div>
+            <button
+              className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/[0.05] disabled:opacity-30 disabled:pointer-events-none transition-colors group"
+              onClick={() => handleOpenTemplates(templatePage + 1)}
+              disabled={templatePage * TEMPLATE_LIMIT >= templateTotal}
+              title="Next Page"
+            >
+              <IconChevronRight size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100" />
+            </button>
+          </div>
+        )}
       </Modal>
 
       {/* Documents Modal: Glass Style */}
@@ -1093,6 +1187,21 @@ export default function App({ onGoToDocs, theme, onToggleTheme }: { onGoToDocs?:
           <h3 className="text-[16px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Your documents</h3>
           <p className="text-[13px] text-zinc-500 dark:text-zinc-400 font-medium">Access your work from anywhere</p>
         </div>
+
+        {/* Search Bar */}
+        <div className="relative mb-4 group">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-zinc-900 dark:group-focus-within:text-zinc-100 transition-colors">
+            <IconSearch size={14} />
+          </div>
+          <input
+            type="text"
+            placeholder="Search documents..."
+            className="premium-input w-full pl-10 h-10 text-[13px]"
+            value={docSearch}
+            onChange={(e) => setDocSearch(e.target.value)}
+          />
+        </div>
+
         <div className="overflow-y-auto pr-1 flex-1 min-h-[50vh] custom-scrollbar">
           {isLoadingDocs ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
@@ -1126,6 +1235,34 @@ export default function App({ onGoToDocs, theme, onToggleTheme }: { onGoToDocs?:
             </div>
           )}
         </div>
+
+        {/* Pagination Footer */}
+        {(docPage > 1 || docHasMore) && (
+          <div className="flex items-center justify-between pt-4 mt-2 border-t border-zinc-100 dark:border-white/[0.05]">
+            <button
+              className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/[0.05] disabled:opacity-30 disabled:pointer-events-none transition-colors group"
+              onClick={() => handleOpenDocuments(docPage - 1)}
+              disabled={docPage <= 1}
+              title="Previous Page"
+            >
+              <IconChevronLeft size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100" />
+            </button>
+            <div className="flex flex-col items-center gap-0.5">
+              <span className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Page</span>
+              <span className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 translate-y-[-1px]">
+                {docPage} <span className="text-zinc-300 dark:text-zinc-700 mx-1 font-light">/</span> {Math.ceil(docTotal / DOC_LIMIT) || 1}
+              </span>
+            </div>
+            <button
+              className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/[0.05] disabled:opacity-30 disabled:pointer-events-none transition-colors group"
+              onClick={() => handleOpenDocuments(docPage + 1)}
+              disabled={docPage * DOC_LIMIT >= docTotal}
+              title="Next Page"
+            >
+              <IconChevronRight size={14} className="text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100" />
+            </button>
+          </div>
+        )}
       </Modal>
 
       {/* Layout Modal: Glass Style */}
@@ -1322,6 +1459,23 @@ function IconCloud({ size = 18, className = "" }: { size?: number, className?: s
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <path d="M17.5 19a3.5 3.5 0 0 0 .5-6.975A5.992 5.992 0 0 0 7 9a6 6 0 0 0-6 6 5 5 0 0 0 5 5h11.5z" />
+    </svg>
+  )
+}
+
+function IconSearch({ size = 18, className = "" }: { size?: number, className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  )
+}
+
+function IconChevronLeft({ size = 16, className = "" }: { size?: number, className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <polyline points="15 18 9 12 15 6" />
     </svg>
   )
 }

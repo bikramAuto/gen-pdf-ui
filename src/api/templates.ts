@@ -44,18 +44,23 @@ export interface SavedTemplate {
   updatedAt?: string;
 }
 
+export interface TemplateListItem {
+  id: string;
+  name: string;
+}
+
 export interface PaginatedTemplates {
-  data: SavedTemplate[];
-  total?: number;
-  page?: number;
-  limit?: number;
+  data: TemplateListItem[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 // Get all templates for a user (paginated)
 export const getTemplates = async (
   userId: string,
   page: number = 1,
-  limit: number = 20,
+  limit: number = 10,
   options: RequestOptions = {}
 ): Promise<PaginatedTemplates> => {
   return apiClient<PaginatedTemplates>(

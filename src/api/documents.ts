@@ -82,6 +82,13 @@ export interface DocumentListItem {
   title: string;
 }
 
+export interface PaginatedDocuments {
+  data: DocumentListItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export interface FullDocument extends SavedDocument {
   template?: {
     id: string;
@@ -104,14 +111,14 @@ export const getDocuments = async (
   userId: string,
   docId?: string,
   page: number = 1,
-  limit: number = 20,
+  limit: number = 10,
   options: RequestOptions = {}
-): Promise<(DocumentListItem | FullDocument)[]> => {
+): Promise<PaginatedDocuments | FullDocument[]> => {
   let url = `/documents/getDoc/${userId}?page=${page}&limit=${limit}`;
   if (docId) {
     url += `&docId=${docId}`;
   }
-  return apiClient<(DocumentListItem | FullDocument)[]>(url, {
+  return apiClient<PaginatedDocuments | FullDocument[]>(url, {
     ...options,
     method: 'GET',
   });

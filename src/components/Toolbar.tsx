@@ -38,6 +38,7 @@ interface ToolbarProps {
   onOpenTemplates: () => void
   onOpenDocuments: () => void
   onOpenLayout: () => void
+  onRename: (newName: string) => void
 }
 
 export default function Toolbar({
@@ -75,9 +76,13 @@ export default function Toolbar({
   onOpenTemplates,
   onOpenDocuments,
   onOpenLayout,
+  onRename,
 }: ToolbarProps) {
 
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [tempName, setTempName] = useState('')
+  const nameInputRef = useRef<HTMLInputElement>(null)
   const [formatOpen, setFormatOpen] = useState(false)
   const [orientOpen, setOrientOpen] = useState(false)
   const [marginOpen, setMarginOpen] = useState(false)
@@ -122,9 +127,46 @@ export default function Toolbar({
       <div className="flex items-center justify-between md:contents order-first pb-1 md:pb-0">
         {/* CENTER-ISH (Tabs & Title) */}
         <div className="flex flex-col items-start min-w-0 md:mx-4 flex-1">
-          <div className="flex items-center gap-1.5">
-            {isDirty && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shadow-[0_0_6px_rgba(245,158,11,0.6)]" title="Unsaved changes" />}
-            <span className="text-sm font-semibold text-gray-800 dark:text-white truncate max-w-[100px] xs:max-w-[150px] md:max-w-[200px]">{fileName}</span>
+          <div className="flex items-center gap-1.5 max-w-full">
+            {isDirty && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse shadow-[0_0_6px_rgba(245,158,11,0.6)] shrink-0" title="Unsaved changes" />}
+            {isEditingName ? (
+              <input
+                ref={nameInputRef}
+                type="text"
+                className="text-sm font-semibold bg-gray-100 dark:bg-white/5 border-none outline-none rounded px-1.5 py-0.5 text-gray-800 dark:text-white w-full max-w-[200px] ring-1 ring-blue-500/50"
+                value={tempName}
+                onChange={(e) => setTempName(e.target.value)}
+                onBlur={() => {
+                  if (tempName.trim() && tempName !== fileName.replace(/\.md$/i, '')) {
+                    onRename(tempName.trim())
+                  }
+                  setIsEditingName(false)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    if (tempName.trim() && tempName !== fileName.replace(/\.md$/i, '')) {
+                      onRename(tempName.trim())
+                    }
+                    setIsEditingName(false)
+                  } else if (e.key === 'Escape') {
+                    setIsEditingName(false)
+                  }
+                }}
+                autoFocus
+                onFocus={(e) => e.target.select()}
+              />
+            ) : (
+              <span 
+                className="text-sm font-semibold text-gray-800 dark:text-white truncate max-w-[100px] xs:max-w-[150px] md:max-w-[200px] cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5 px-1.5 py-0.5 rounded transition-colors"
+                onClick={() => {
+                  setTempName(fileName.replace(/\.md$/i, ''))
+                  setIsEditingName(true)
+                }}
+                title="Click to rename"
+              >
+                {fileName}
+              </span>
+            )}
           </div>
           {/* Mobile Tabs */}
           <div className="flex md:hidden bg-gray-100 dark:bg-white/5 p-0.5 rounded-md mt-1 shrink-0">
