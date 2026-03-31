@@ -21,7 +21,7 @@ const DEFAULT_CONTENT = ``;
 type Theme = 'dark' | 'light'
 
 
-export default function App({ onGoToDocs, theme, onToggleTheme }: { onGoToDocs?: () => void, theme: 'light' | 'dark', onToggleTheme: () => void }) {
+export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?: () => void, theme: 'light' | 'dark', onToggleTheme: () => void }) {
   const queryParams = new URLSearchParams(window.location.search)
   const isSetPasswordView = queryParams.has('id')
 

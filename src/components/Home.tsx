@@ -63,7 +63,7 @@ const DOC_TYPES = [
 ]
 
 
-export default function DocsPage({ onGoToEditor, onGoToDocs, theme, onToggleTheme }: { onGoToEditor: () => void, onGoToDocs: () => void, theme: 'light' | 'dark', onToggleTheme: () => void }) {
+export default function Home({ onGoToEditor, onGoToDocs, theme, onToggleTheme }: { onGoToEditor: () => void, onGoToDocs: () => void, theme: 'light' | 'dark', onToggleTheme: () => void }) {
   const [activeDocType, setActiveDocType] = useState(DOC_TYPES[0])
   const [activeModal, setActiveModal] = useState<'privacy' | 'terms' | 'about' | null>(null)
 

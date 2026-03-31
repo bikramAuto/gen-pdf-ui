@@ -135,7 +135,7 @@ export default function Documentation({ onBack, onGoToEditor, theme, onToggleThe
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0b0d12] text-zinc-900 dark:text-zinc-100 font-[Inter,system-ui,sans-serif]">
-      {/* Background Texture (same as DocsPage for consistency) */}
+      {/* Background Texture (same as Home for consistency) */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div 
           className="absolute inset-0 opacity-[0.2] dark:opacity-[0.05]" 
