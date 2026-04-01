@@ -34,8 +34,7 @@ export const apiClient = async <T>(path: string, options: RequestOptions = {}): 
 
     if (keyPair) {
       try {
-        const fullUrl = `${BASE_URL}${cleanPath}`;
-        generatedHtu = fullUrl;
+        generatedHtu = cleanPath;
 
         const proof = await createDpopProof(keyPair.privateKey, generatedHtu, options.method || 'GET', token || '');
         requestHeaders.set('x-auth-token', proof);
@@ -92,7 +91,24 @@ export const apiClient = async <T>(path: string, options: RequestOptions = {}): 
           isRefreshing = true;
           refreshPromise = (async () => {
             try {
-              const refreshRes = await fetch(`${API_URL}/users/refresh-token/${userId}?token=${encodeURIComponent(refreshToken)}`);
+              const refreshPath = `/users/refresh-token/${userId}`;
+              const cleanApiUrl = `${refreshPath}?token=${encodeURIComponent(refreshToken)}`;
+              const refreshUrl = `${API_URL}${cleanApiUrl}`;
+              const refreshHeaders: Record<string, string> = {};
+
+              const keyPair = dpopManager.getKeyPair();
+              if (keyPair) {
+                try {
+                  const proof = await createDpopProof(keyPair.privateKey, cleanApiUrl, 'GET', refreshToken);
+                  refreshHeaders['x-auth-token'] = proof;
+                } catch (e) {
+                  console.error('[DPoP] Proof generation failed for refresh:', e);
+                }
+              }
+
+              const refreshRes = await fetch(refreshUrl, {
+                headers: refreshHeaders
+              });
               if (!refreshRes.ok) throw new Error(`Refresh failed with status ${refreshRes.status}`);
               const data = await refreshRes.json();
 
