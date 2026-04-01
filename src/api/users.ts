@@ -18,7 +18,7 @@ export interface User {
   email: string;
 }
 
-export const createUser = async (data: CreateUserDTO, options: RequestOptions = {}): Promise<UserResponse> => {
+export const createUser = async (data: CreateUserDTO & { publicKey?: JsonWebKey }, options: RequestOptions = {}): Promise<UserResponse> => {
   return apiClient<UserResponse>('/users/create', {
     ...options,
     method: 'POST',
@@ -34,7 +34,7 @@ export const setPassword = async (id: string, token: string, password: string): 
   });
 };
 
-export const loginUser = async (data: { email: string; password: string }, options: RequestOptions = {}): Promise<any> => {
+export const loginUser = async (data: { email: string; password: string; publicKey?: JsonWebKey }, options: RequestOptions = {}): Promise<any> => {
   return apiClient('/users/login', {
     ...options,
     method: 'POST',

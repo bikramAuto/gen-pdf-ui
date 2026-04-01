@@ -174,7 +174,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
 
     window.addEventListener('auth-expired', handleAuthExpired)
     window.addEventListener('api-error', handleApiError)
-    
+
     return () => {
       window.removeEventListener('auth-expired', handleAuthExpired)
       window.removeEventListener('api-error', handleApiError)
@@ -361,13 +361,14 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
 
 
 
-  const handleDocNameConfirm = useCallback(async (name: string) => {
+  const handleDocNameConfirm = useCallback(async (name: string, overrideAction?: 'new' | 'save' | 'snapshot') => {
+    const action = overrideAction || pendingDocAction
     const trimmed = name.trim()
     if (!trimmed) return
     const finalFileName = trimmed.endsWith('.md') ? trimmed : `${trimmed}.md`
     setIsDocNameModalOpen(false)
 
-    if (pendingDocAction === 'new') {
+    if (action === 'new') {
       // Reset EVERYTHING and start fresh with the chosen name
       setContent(DEFAULT_CONTENT)
       setFileName(finalFileName)
@@ -395,12 +396,12 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
       return
     }
 
-    if ((pendingDocAction === 'save' || pendingDocAction === 'snapshot') && user) {
+    if ((action === 'save' || action === 'snapshot') && user) {
       setFileName(finalFileName)
       setIsSaving(true)
       try {
         let activeTemplateId = templateId;
-        
+
         // If template is unsaved/not-snapshotted, create it first
         if (!activeTemplateId) {
           const payload: TemplatePayload = {
@@ -424,7 +425,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
         }
 
         // If snapshot, ALWAYS create new. Otherwise, update if documentId exists.
-        if (documentId && pendingDocAction === 'save') {
+        if (documentId && action === 'save') {
           await updateDocument(user.id, documentId, docPayload)
         } else {
           const docRes = await createDocument(user.id, docPayload)
@@ -432,7 +433,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
         }
 
         setIsDirty(false)
-        showToast(pendingDocAction === 'snapshot' ? 'Document saved as new snapshot!' : 'Document synced!', 'success')
+        showToast(action === 'snapshot' ? 'Document saved as new snapshot!' : 'Document synced!', 'success')
       } catch (err) {
         console.error('Save failed:', err)
         // Global error handler will show the message
@@ -470,7 +471,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
     // Directly save with current fileName (no modal)
     const name = fileName.replace(/\.md$/i, '')
     setPendingDocAction('save')
-    handleDocNameConfirm(name)
+    handleDocNameConfirm(name, 'save')
   }, [user, fileName, handleDocNameConfirm])
 
   const handleSaveDocumentSnapshot = useCallback(async () => {
@@ -478,7 +479,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
     // Directly save as snapshot with " Copy" suffix (no modal)
     const name = fileName.replace(/\.md$/i, '') + ' Copy'
     setPendingDocAction('snapshot')
-    handleDocNameConfirm(name)
+    handleDocNameConfirm(name, 'snapshot')
   }, [user, fileName, handleDocNameConfirm])
 
   const handleSaveTemplate = useCallback(async () => {
@@ -1279,7 +1280,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
 
         {/* Content */}
         <div className="relative z-10 space-y-4 pb-2 w-full">
-          
+
           {/* Header Configuration */}
           <div className="bg-zinc-50/80 dark:bg-[#14161A] border border-zinc-200/80 dark:border-zinc-800/80 rounded-[24px] p-5 space-y-4 shadow-sm dark:shadow-none">
             <div className="flex items-center gap-2 mb-1">
@@ -1289,7 +1290,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
 
             <div className="relative group">
               <div className="absolute top-3 left-4 text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pointer-events-none z-10">Text</div>
-              <textarea 
+              <textarea
                 className="w-full bg-white dark:bg-[#1A1C20]/80 border border-zinc-200 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[13px] font-medium placeholder-zinc-400 dark:placeholder-zinc-600 rounded-[16px] min-h-[70px] pt-7 px-4 focus:border-blue-500/50 dark:focus:border-blue-500/50 transition-colors resize-none shadow-sm dark:shadow-none custom-input"
                 placeholder="Appears at the top of every page..."
                 value={pdfConfig.headerText}
@@ -1305,7 +1306,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
                 )}
               </div>
               {!headerBanner ? (
-                <button 
+                <button
                   onClick={() => headerBannerInputRef.current?.click()}
                   className="w-full h-[60px] bg-white dark:bg-[#1A1C20]/80 border border-dashed border-zinc-300 dark:border-zinc-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 rounded-[16px] flex items-center justify-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors group"
                 >
@@ -1316,14 +1317,14 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
                 <div className="relative rounded-[16px] overflow-hidden group border border-blue-500/30 dark:border-blue-400/30 bg-blue-50/50 dark:bg-blue-500/5 shadow-sm p-4 flex flex-col justify-center h-[60px]">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                       <IconHTML size={16} className="text-blue-500 dark:text-blue-400" />
-                       <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-[200px]">HTML file active</span>
+                      <IconHTML size={16} className="text-blue-500 dark:text-blue-400" />
+                      <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-[200px]">HTML file active</span>
                     </div>
-                    <button 
-                       onClick={() => headerBannerInputRef.current?.click()}
-                       className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 text-[11px] font-semibold transition-colors"
+                    <button
+                      onClick={() => headerBannerInputRef.current?.click()}
+                      className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 text-[11px] font-semibold transition-colors"
                     >
-                       Change
+                      Change
                     </button>
                   </div>
                 </div>
@@ -1341,7 +1342,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
 
             <div className="relative group">
               <div className="absolute top-3 left-4 text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pointer-events-none z-10">Text</div>
-              <textarea 
+              <textarea
                 className="w-full bg-white dark:bg-[#1A1C20]/80 border border-zinc-200 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[13px] font-medium placeholder-zinc-400 dark:placeholder-zinc-600 rounded-[16px] min-h-[70px] pt-7 px-4 focus:border-blue-500/50 dark:focus:border-blue-500/50 transition-colors resize-none shadow-sm dark:shadow-none custom-input"
                 placeholder="Appears at the bottom of every page..."
                 value={pdfConfig.footerText}
@@ -1357,7 +1358,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
                 )}
               </div>
               {!footerBanner ? (
-                <button 
+                <button
                   onClick={() => footerBannerInputRef.current?.click()}
                   className="w-full h-[60px] bg-white dark:bg-[#1A1C20]/80 border border-dashed border-zinc-300 dark:border-zinc-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 rounded-[16px] flex items-center justify-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors group"
                 >
@@ -1368,14 +1369,14 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
                 <div className="relative rounded-[16px] overflow-hidden group border border-blue-500/30 dark:border-blue-400/30 bg-blue-50/50 dark:bg-blue-500/5 shadow-sm p-4 flex flex-col justify-center h-[60px]">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                       <IconHTML size={16} className="text-blue-500 dark:text-blue-400" />
-                       <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-[200px]">HTML file active</span>
+                      <IconHTML size={16} className="text-blue-500 dark:text-blue-400" />
+                      <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-[200px]">HTML file active</span>
                     </div>
-                    <button 
-                       onClick={() => footerBannerInputRef.current?.click()}
-                       className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 text-[11px] font-semibold transition-colors"
+                    <button
+                      onClick={() => footerBannerInputRef.current?.click()}
+                      className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 text-[11px] font-semibold transition-colors"
                     >
-                       Change
+                      Change
                     </button>
                   </div>
                 </div>
@@ -1385,7 +1386,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
           </div>
 
         </div>
-        
+
         {/* Footer action */}
         <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800/50 relative z-10 shrink-0">
           <button
