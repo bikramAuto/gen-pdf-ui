@@ -21,14 +21,10 @@ export const useSocialAuth = (onSuccess: (user: User) => void, onAuthModalClose:
     setIsLoading(true);
 
     try {
-      // 1. Generate DPoP key pair
       const keyPair = await dpopManager.generateAndSetKeyPair();
       const publicKeyJwk = await exportPublicKey(keyPair.publicKey);
-
-      // 2. Create a random state
       const state = crypto.randomUUID();
 
-      // 3. POST /auth/store-state with { state, publicKey }
       const storeRes = await fetch('/api/auth/store-state', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -60,7 +56,7 @@ export const useSocialAuth = (onSuccess: (user: User) => void, onAuthModalClose:
 
           // Aggressively hide the JSON body as soon as it's detected
           if (text.includes('"result"') || text.includes('"token"')) {
-            try { popup.document.body.style.display = 'none'; } catch (e) {}
+            try { popup.document.body.style.display = 'none'; } catch (e) { }
           }
 
           let data: SocialAuthResponse;
@@ -100,13 +96,13 @@ export const useSocialAuth = (onSuccess: (user: User) => void, onAuthModalClose:
               const u = await apiClient<{ name?: string; email?: string }>(`/users/${userId}`);
               userName = u.name || '';
               userEmail = u.email || '';
-            } catch (error) {}
+            } catch (error) { }
 
             onSuccess({ id: userId, name: userName, email: userEmail });
             onAuthModalClose();
             setIsLoading(false);
           }
-        } catch (error) {}
+        } catch (error) { }
       }, 200);
 
     } catch (err) {

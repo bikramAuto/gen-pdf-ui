@@ -2,7 +2,8 @@ import { useMemo, useEffect, useRef, useState } from 'react'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import hljs from 'highlight.js'
-import 'highlight.js/styles/github.css' // Clean, professional theme
+import 'highlight.js/styles/github.css'
+import createFootnotes from 'marked-footnote'
 
 import { getBlobUrl } from '../utils/imageStorage'
 import { PDFConfig } from '../types/pdf'
@@ -18,11 +19,64 @@ interface PreviewProps {
   footerBanner?: string
 }
 
-// Configure marked globally with base options
+// ==highlight== extension
+const highlightExtension = {
+  name: 'highlight',
+  level: 'inline' as const,
+  start(src: string) { return src.indexOf('==') },
+  tokenizer(src: string) {
+    const match = src.match(/^==([^=]+)==/)
+    if (match) {
+      return { type: 'highlight', raw: match[0], text: match[1] }
+    }
+  },
+  renderer(token: any) {
+    return `<mark>${token.text}</mark>`
+  }
+}
+
+// H~2~O subscript extension
+const subscriptExtension = {
+  name: 'subscript',
+  level: 'inline' as const,
+  start(src: string) { return src.indexOf('~') },
+  tokenizer(src: string) {
+    const match = src.match(/^~(?!~)([^~\s]+)~(?!~)/)
+    if (match) {
+      return { type: 'subscript', raw: match[0], text: match[1] }
+    }
+  },
+  renderer(token: any) {
+    return `<sub>${token.text}</sub>`
+  }
+}
+
+// X^2^ superscript extension
+const superscriptExtension = {
+  name: 'superscript',
+  level: 'inline' as const,
+  start(src: string) { return src.indexOf('^') },
+  tokenizer(src: string) {
+    const match = src.match(/^\^([^\^\s]+)\^/)
+    if (match) {
+      return { type: 'superscript', raw: match[0], text: match[1] }
+    }
+  },
+  renderer(token: any) {
+    return `<sup>${token.text}</sup>`
+  }
+}
+
+// Configure marked globally with extensions
 marked.setOptions({
   gfm: true,
   breaks: true,
 } as any)
+
+marked.use(
+  createFootnotes(),
+  { extensions: [highlightExtension, subscriptExtension, superscriptExtension] }
+)
 
 export default function Preview({ content, pdfConfig, showPDFTimestamp, showPageNumbers, headerBanner, footerBanner }: PreviewProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -98,11 +152,23 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
         'strong', 'em', 'del', 'code', 'pre', 'blockquote',
         'ul', 'ol', 'li',
         'a', 'img',
-        'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
+        'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col',
         'details', 'summary',
         'span', 'div',
+        'center', 'mark', 'kbd', 'sub', 'sup', 'u', 'ins', 'abbr', 'small', 'b', 'i', 's', 'q', 'cite',
+        'figure', 'figcaption', 'picture', 'source', 'video', 'audio',
+        'section', 'article', 'nav', 'header', 'footer', 'aside', 'main',
+        'dl', 'dt', 'dd', 'ruby', 'rt', 'rp', 'wbr', 'time', 'data', 'var', 'samp', 'dfn',
+        'input', 'label',
       ],
-      ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel', 'align', 'style', 'data-hash'],
+      ALLOWED_ATTR: [
+        'href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel', 'align', 'style', 'data-hash',
+        'width', 'height', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'preload',
+        'type', 'checked', 'disabled', 'readonly', 'value', 'name', 'for',
+        'datetime', 'colspan', 'rowspan', 'scope', 'open', 'role', 'aria-label',
+        'start', 'reversed',
+        'data-footnote-ref', 'data-footnote-backref', 'data-footnotes',
+      ],
       ADD_ATTR: ['target'],
       FORBID_TAGS: ['style', 'script'],
       ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp|blob):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,

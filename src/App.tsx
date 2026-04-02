@@ -14,6 +14,7 @@ import { compressImage, storeImage, deleteImage, getAllHashes } from './utils/im
 import { PDFConfig, PDFFormat, PDFOrientation } from './types/pdf'
 import { printPDF } from './utils/pdfUtils'
 import Modal from './components/ui/Modal'
+import { dpopManager } from './utils/dpop'
 
 import './styles/global.css'
 
@@ -23,6 +24,10 @@ type Theme = 'dark' | 'light'
 
 
 export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?: () => void, theme: 'light' | 'dark', onToggleTheme: () => void }) {
+  useEffect(() => {
+    dpopManager.init();
+  }, []);
+
   const queryParams = new URLSearchParams(window.location.search)
   const isSetPasswordView = queryParams.has('id')
 

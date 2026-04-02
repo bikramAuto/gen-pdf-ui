@@ -1,3 +1,4 @@
+import { getDB, DPOP_KEYS_STORE } from './imageStorage';
 
 export async function generateKeyPair(): Promise<CryptoKeyPair> {
   return await crypto.subtle.generateKey(
@@ -86,15 +87,66 @@ export async function createDpopProof(
 
 // In-memory key pair manager
 let currentKeyPair: CryptoKeyPair | null = null;
+const KEY_ID = 'default_dpop_key';
 
 export const dpopManager = {
-  setKeyPair: (keyPair: CryptoKeyPair) => {
-    currentKeyPair = keyPair;
+  // 1. Explicit Initialization
+  init: async () => {
+    try {
+      const db = await getDB();
+      const tx = db.transaction(DPOP_KEYS_STORE, 'readonly');
+      const store = tx.objectStore(DPOP_KEYS_STORE);
+      const req = store.get(KEY_ID);
+
+      return new Promise<void>((resolve) => {
+        req.onsuccess = () => {
+          if (req.result) {
+            currentKeyPair = req.result;
+            console.log('[DPoP] Successfully loaded existing key pair from IndexedDB');
+          } else {
+            console.log('[DPoP] No existing key pair found in database');
+          }
+          resolve();
+        };
+        req.onerror = () => {
+          console.error('[DPoP] Failed to load key pair from DB:', req.error);
+          resolve();
+        };
+      });
+    } catch (err) {
+      console.error('[DPoP] IndexedDB init failed:', err);
+    }
   },
-  getKeyPair: () => currentKeyPair,
-  generateAndSetKeyPair: async () => {
-    const keyPair = await generateKeyPair();
+
+  // 2. Set/Save
+  setKeyPair: async (keyPair: CryptoKeyPair) => {
     currentKeyPair = keyPair;
+    try {
+      const db = await getDB();
+      const tx = db.transaction(DPOP_KEYS_STORE, 'readwrite');
+      const store = tx.objectStore(DPOP_KEYS_STORE);
+      store.put(keyPair, KEY_ID);
+    } catch (err) {
+      console.error('[DPoP] Failed to persist key pair:', err);
+    }
+  },
+
+  getKeyPair: () => currentKeyPair,
+
+  // 3. Generate with persistence & "No Regeneration" rule
+  generateAndSetKeyPair: async () => {
+    // DESIGN RULE: Never regenerate if one already exists
+    if (!currentKeyPair) {
+      // Re-check DB if memory is empty
+      await dpopManager.init();
+    }
+
+    if (currentKeyPair) {
+      return currentKeyPair;
+    }
+
+    const keyPair = await generateKeyPair();
+    await dpopManager.setKeyPair(keyPair);
     return keyPair;
   }
 };

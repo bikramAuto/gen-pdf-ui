@@ -104,6 +104,32 @@ div.prose tr:nth-child(even) {
   background: #1a1b26 !important;
 }
 
+:where(.dark, .dark *) .hljs {
+  color: #c9d1d9 !important;
+  background: transparent !important;
+}
+:where(.dark, .dark *) .hljs-keyword,
+:where(.dark, .dark *) .hljs-selector-tag,
+:where(.dark, .dark *) .hljs-type { color: #ff7b72 !important; }
+:where(.dark, .dark *) .hljs-string,
+:where(.dark, .dark *) .hljs-addition { color: #a5d6ff !important; }
+:where(.dark, .dark *) .hljs-comment,
+:where(.dark, .dark *) .hljs-quote { color: #8b949e !important; }
+:where(.dark, .dark *) .hljs-number,
+:where(.dark, .dark *) .hljs-literal { color: #79c0ff !important; }
+:where(.dark, .dark *) .hljs-title,
+:where(.dark, .dark *) .hljs-section,
+:where(.dark, .dark *) .hljs-title.function_ { color: #d2a8ff !important; }
+:where(.dark, .dark *) .hljs-built_in { color: #ffa657 !important; }
+:where(.dark, .dark *) .hljs-variable,
+:where(.dark, .dark *) .hljs-attr,
+:where(.dark, .dark *) .hljs-params { color: #c9d1d9 !important; }
+:where(.dark, .dark *) .hljs-symbol,
+:where(.dark, .dark *) .hljs-bullet { color: #ffa657 !important; }
+:where(.dark, .dark *) .hljs-meta { color: #79c0ff !important; }
+:where(.dark, .dark *) .hljs-deletion { color: #ffdcd7 !important; background: rgba(248,81,73,0.15) !important; }
+:where(.dark, .dark *) .hljs-addition { background: rgba(63,185,80,0.15) !important; }
+
 .prose pre code {
   @apply border-none shadow-none p-0 bg-transparent text-sm leading-relaxed;
 }
@@ -126,6 +152,44 @@ div.prose tr:nth-child(even) {
 .prose h6 {
   break-inside: avoid;
   page-break-inside: avoid;
+}
+
+/* Extended Syntax Styling */
+.prose mark {
+  @apply bg-yellow-200 dark:bg-yellow-500/30 text-inherit px-0.5 rounded-sm;
+}
+
+.prose sub, .prose sup {
+  @apply text-[75%] leading-none relative align-baseline;
+}
+
+.prose sub { bottom: -0.25em; }
+.prose sup { top: -0.5em; }
+
+/* Footnotes */
+.prose section[data-footnotes] {
+  @apply mt-12 pt-6 border-t border-gray-200 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-400;
+}
+
+.prose section[data-footnotes] h2 {
+  @apply text-lg font-bold mb-4 text-gray-900 dark:text-gray-100;
+}
+
+.prose [data-footnote-ref] {
+  @apply text-blue-600 dark:text-blue-400 no-underline hover:underline ml-0.5;
+}
+
+.prose [data-footnote-backref] {
+  @apply text-blue-600 dark:text-blue-400 no-underline hover:underline ml-1;
+}
+
+/* Task Lists */
+.prose ul > li:has(input[type="checkbox"]) {
+  @apply list-none pl-0 flex items-center gap-2;
+}
+
+.prose input[type="checkbox"] {
+  @apply w-4 h-4 rounded border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 text-blue-600 focus:ring-blue-500 cursor-default;
 }
 
 /* Print line-height consistency (#10) */

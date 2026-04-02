@@ -1,20 +1,24 @@
 
-const DB_NAME = 'MarkdownEditorDB';
-const STORE_NAME = 'images';
-const DB_VERSION = 1;
+export const DB_NAME = 'MarkdownEditorDB';
+export const DB_VERSION = 2;
+export const STORE_NAME = 'images';
+export const DPOP_KEYS_STORE = 'dpop_keys';
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
-function getDB(): Promise<IDBDatabase> {
+export function getDB(): Promise<IDBDatabase> {
   if (dbPromise) return dbPromise;
 
   dbPromise = new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onupgradeneeded = () => {
+    request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
       const database = request.result;
       if (!database.objectStoreNames.contains(STORE_NAME)) {
         database.createObjectStore(STORE_NAME);
+      }
+      if (!database.objectStoreNames.contains(DPOP_KEYS_STORE)) {
+        database.createObjectStore(DPOP_KEYS_STORE);
       }
     };
 

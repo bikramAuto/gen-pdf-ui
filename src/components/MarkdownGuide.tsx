@@ -127,13 +127,15 @@ const GUIDE_SECTIONS: GuideSection[] = [
         rendered: <p>Use <code className="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono text-indigo-600 dark:text-indigo-400">inline code</code> in a sentence.</p>
       },
       {
-        label: 'Subscript & Superscript',
+        label: 'Subscript, Superscript & Highlight',
         syntax: `H~2~O (subscript)
-X^2^ (superscript)`,
+X^2^ (superscript)
+==Highlighted text==`,
         rendered: (
           <div className="space-y-1">
             <p>H<sub>2</sub>O (subscript)</p>
             <p>X<sup>2</sup> (superscript)</p>
+            <p><mark className="bg-yellow-200 dark:bg-yellow-500/30 text-inherit px-1 rounded-sm">Highlighted text</mark></p>
           </div>
         )
       }
@@ -391,7 +393,8 @@ ___`,
     items: [
       {
         label: 'Inline HTML',
-        syntax: `<mark>Highlighted text</mark>
+        syntax: `<center>Centered text</center>
+<mark>Highlighted text</mark>
 <kbd>Ctrl</kbd> + <kbd>S</kbd>
 <details>
   <summary>Click to expand</summary>
@@ -399,6 +402,7 @@ ___`,
 </details>`,
         rendered: (
           <div className="space-y-3">
+            <p className="text-center font-bold">Centered text</p>
             <p><mark className="bg-yellow-200 dark:bg-yellow-800/40 px-1 rounded">Highlighted text</mark></p>
             <p><kbd className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-mono font-bold shadow-sm">Ctrl</kbd> + <kbd className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-mono font-bold shadow-sm">S</kbd></p>
             <details className="rounded-xl border border-zinc-200 dark:border-zinc-700 overflow-hidden">
@@ -621,14 +625,17 @@ export default function MarkdownGuide({
                   { syntax: '![alt](url)', desc: 'Image' },
                   { syntax: '`code`', desc: 'Inline code' },
                   { syntax: '> quote', desc: 'Blockquote' },
-                  { syntax: '- item', desc: 'Unordered list' },
-                  { syntax: '---', desc: 'Horizontal rule' },
+                  { syntax: '- item', desc: 'List' },
+                  { syntax: '==high==', desc: 'Highlight' },
+                  { syntax: '[^1]', desc: 'Footnote' },
+                  { syntax: 'H~2~O', desc: 'Subscript' },
+                  { syntax: '---', desc: 'Rule' },
                 ].map((item) => (
-                  <div key={item.syntax} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white/60 dark:bg-zinc-900/40 backdrop-blur-sm">
-                    <code className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-900 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-800 shrink-0">
+                  <div key={item.syntax} className="flex items-center gap-2 px-2.5 py-2 rounded-xl bg-white/60 dark:bg-zinc-900/40 backdrop-blur-sm group/item hover:bg-white dark:hover:bg-zinc-900 transition-all duration-300 border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900">
+                    <code className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-950 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-800/50 shrink-0 group-hover/item:border-indigo-300 dark:group-hover/item:border-indigo-500 transition-colors">
                       {item.syntax}
                     </code>
-                    <span className="text-xs text-zinc-500 truncate">{item.desc}</span>
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold truncate tracking-tight">{item.desc}</span>
                   </div>
                 ))}
               </div>
