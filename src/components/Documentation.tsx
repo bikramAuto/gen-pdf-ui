@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import '../styles/global.css'
 
 interface DocSection {
@@ -119,19 +119,170 @@ const DOCS: DocSection[] = [
         </div>
       </div>
     )
+  },
+  {
+    id: 'security',
+    title: 'Security & Auth',
+    content: (
+      <div className="space-y-6">
+        <p className="text-zinc-600 dark:text-zinc-400">
+          BikDocs is built with a security-first mindset. Every authenticated request is cryptographically bound to your device, ensuring your documents and identity remain protected.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800">
+            <div className="flex items-center gap-2 mb-3">
+              <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+              <h4 className="font-bold text-sm text-emerald-700 dark:text-emerald-300">DPoP Proof-of-Possession</h4>
+            </div>
+            <p className="text-xs text-emerald-600/80 dark:text-emerald-400/70 leading-relaxed">Every API request includes a DPoP (Demonstrating Proof-of-Possession) token signed with your device&apos;s ECDSA P-256 key pair, preventing token theft and replay attacks.</p>
+          </div>
+          <div className="p-5 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
+            <div className="flex items-center gap-2 mb-3">
+              <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+              <h4 className="font-bold text-sm text-blue-700 dark:text-blue-300">ECDSA Key Pair</h4>
+            </div>
+            <p className="text-xs text-blue-600/80 dark:text-blue-400/70 leading-relaxed">A unique ECDSA P-256 key pair is generated in-browser using the Web Crypto API. Private keys never leave your device — only the public key is shared with the server.</p>
+          </div>
+          <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800">
+            <div className="flex items-center gap-2 mb-3">
+              <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              <h4 className="font-bold text-sm text-amber-700 dark:text-amber-300">Silent Token Refresh</h4>
+            </div>
+            <p className="text-xs text-amber-600/80 dark:text-amber-400/70 leading-relaxed">Expired access tokens are automatically refreshed in the background using DPoP-protected refresh tokens. You&apos;ll never be interrupted by a login prompt mid-session.</p>
+          </div>
+          <div className="p-5 rounded-2xl bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800">
+            <div className="flex items-center gap-2 mb-3">
+              <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+              <h4 className="font-bold text-sm text-purple-700 dark:text-purple-300">Content Sanitization</h4>
+            </div>
+            <p className="text-xs text-purple-600/80 dark:text-purple-400/70 leading-relaxed">All rendered Markdown is sanitized through DOMPurify before display, blocking XSS attacks from malicious content while preserving safe HTML elements.</p>
+          </div>
+        </div>
+        <div className="p-6 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/30 dark:bg-transparent">
+          <h4 className="font-bold mb-2">How DPoP Authentication Works</h4>
+          <ol className="list-decimal pl-6 space-y-2 text-sm text-zinc-500">
+            <li>On login or OAuth, a unique <strong>ECDSA P-256 key pair</strong> is generated in your browser.</li>
+            <li>The public key is bound to your session on the server during authentication.</li>
+            <li>For every API request, BikDocs creates a <strong>signed DPoP JWT proof</strong> containing the request method, URL, timestamp, and a SHA-256 hash of the access token.</li>
+            <li>The server verifies the proof&apos;s signature matches the registered public key, ensuring the request originates from the same device that authenticated.</li>
+            <li>If a stolen token is used from another device, it will be <strong>rejected</strong> because it lacks the correct private key to sign the DPoP proof.</li>
+          </ol>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'cloud',
+    title: 'Cloud Sync',
+    content: (
+      <div className="space-y-6">
+        <p className="text-zinc-600 dark:text-zinc-400">
+          BikDocs operates on a local-first model — your work is always saved to your browser&apos;s local storage first, with optional cloud sync when you sign in.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700 text-center">
+            <svg className="w-8 h-8 mx-auto mb-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+            <h4 className="font-bold text-sm mb-1">Templates</h4>
+            <p className="text-[11px] text-zinc-500 leading-relaxed">Save layout settings — page format, margins, headers, and footers — as reusable templates across documents.</p>
+          </div>
+          <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700 text-center">
+            <svg className="w-8 h-8 mx-auto mb-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+            <h4 className="font-bold text-sm mb-1">Sync</h4>
+            <p className="text-[11px] text-zinc-500 leading-relaxed">Push your current document to the cloud with one click. Changes are synced to the same server-side copy.</p>
+          </div>
+          <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700 text-center">
+            <svg className="w-8 h-8 mx-auto mb-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <h4 className="font-bold text-sm mb-1">Snapshots</h4>
+            <p className="text-[11px] text-zinc-500 leading-relaxed">Create point-in-time snapshots of your document for versioning, without overwriting the original.</p>
+          </div>
+        </div>
+        <div className="p-6 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/30 dark:bg-transparent">
+          <h4 className="font-bold mb-2">Local-First Architecture</h4>
+          <p className="text-sm text-zinc-500">Your content, filename, theme, layout settings, and images (stored in IndexedDB) are always persisted in local storage. Even without internet or an account, all features work offline. Cloud sync simply replicates your data to the server for cross-device access.</p>
+        </div>
+      </div>
+    )
+  },
+  {
+    id: 'shortcuts',
+    title: 'Keyboard Shortcuts',
+    content: (
+      <div className="space-y-6">
+        <p className="text-zinc-600 dark:text-zinc-400">
+          Speed up your workflow with these essential keyboard shortcuts available in the editor.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr className="bg-zinc-100 dark:bg-zinc-800">
+                <th className="border border-zinc-200 dark:border-zinc-700 px-4 py-2.5 text-left font-bold">Action</th>
+                <th className="border border-zinc-200 dark:border-zinc-700 px-4 py-2.5 text-left font-bold">macOS</th>
+                <th className="border border-zinc-200 dark:border-zinc-700 px-4 py-2.5 text-left font-bold">Windows / Linux</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ['Save / Sync', '⌘ + S', 'Ctrl + S'],
+                ['Download as Markdown', '⌘ + Shift + S', 'Ctrl + Shift + S'],
+                ['Export to PDF', '⌘ + P', 'Ctrl + P'],
+                ['Toggle Bold', '⌘ + B', 'Ctrl + B'],
+                ['Toggle Italic', '⌘ + I', 'Ctrl + I'],
+                ['Undo', '⌘ + Z', 'Ctrl + Z'],
+                ['Redo', '⌘ + Shift + Z', 'Ctrl + Shift + Z'],
+                ['Find & Replace', '⌘ + H', 'Ctrl + H'],
+              ].map(([action, mac, win], i) => (
+                <tr key={action} className={i % 2 !== 0 ? 'bg-zinc-50 dark:bg-zinc-800/30' : ''}>
+                  <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 font-medium">{action}</td>
+                  <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 font-mono text-xs text-indigo-600 dark:text-indigo-400">{mac}</td>
+                  <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 font-mono text-xs text-indigo-600 dark:text-indigo-400">{win}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    )
   }
 ]
 
-export default function Documentation({ onBack, onGoToEditor, theme, onToggleTheme }: { onBack: () => void, onGoToEditor: () => void, theme: 'light' | 'dark', onToggleTheme: () => void }) {
+export default function Documentation({ onBack, onGoToEditor, onGoToGuide, theme, onToggleTheme }: { onBack: () => void, onGoToEditor: () => void, onGoToGuide: () => void, theme: 'light' | 'dark', onToggleTheme: () => void }) {
   const [activeSection, setActiveSection] = useState(DOCS[0].id)
+  const isClickScrolling = useRef(false)
 
   const handleScrollTo = (id: string) => {
+    isClickScrolling.current = true
     setActiveSection(id)
     const element = document.getElementById(id)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      // Allow observer to resume after the smooth scroll finishes
+      setTimeout(() => { isClickScrolling.current = false }, 800)
     }
   }
+
+  // Scroll-sync: observe which section is currently visible
+  useEffect(() => {
+    const sectionIds = DOCS.map(d => d.id)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isClickScrolling.current) return
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id)
+            break
+          }
+        }
+      },
+      { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
+    )
+
+    sectionIds.forEach(id => {
+      const el = document.getElementById(id)
+      if (el) observer.observe(el)
+    })
+
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0b0d12] text-zinc-900 dark:text-zinc-100 font-[Inter,system-ui,sans-serif]">
@@ -166,6 +317,16 @@ export default function Documentation({ onBack, onGoToEditor, theme, onToggleThe
                 <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               )}
             </button>
+            <button
+              onClick={onGoToGuide}
+              className="flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
+              title="Syntax Guide"
+            >
+              <svg className="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+              <span className="hidden md:inline">Syntax Guide</span>
+            </button>
             <button 
               onClick={onBack}
               className="flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
@@ -199,10 +360,10 @@ export default function Documentation({ onBack, onGoToEditor, theme, onToggleThe
                 <button
                   key={doc.id}
                   onClick={() => handleScrollTo(doc.id)}
-                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 ease-out ${
                     activeSection === doc.id 
-                    ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800' 
-                    : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
+                    ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 shadow-sm' 
+                    : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 border border-transparent'
                   }`}
                 >
                   {doc.title}

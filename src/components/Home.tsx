@@ -63,7 +63,7 @@ const DOC_TYPES = [
 ]
 
 
-export default function Home({ onGoToEditor, onGoToDocs, theme, onToggleTheme }: { onGoToEditor: () => void, onGoToDocs: () => void, theme: 'light' | 'dark', onToggleTheme: () => void }) {
+export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onToggleTheme }: { onGoToEditor: () => void, onGoToDocs: () => void, onGoToGuide: () => void, theme: 'light' | 'dark', onToggleTheme: () => void }) {
   const [activeDocType, setActiveDocType] = useState(DOC_TYPES[0])
   const [activeModal, setActiveModal] = useState<'privacy' | 'terms' | 'about' | null>(null)
 
@@ -151,6 +151,12 @@ export default function Home({ onGoToEditor, onGoToDocs, theme, onToggleTheme }:
               className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
             >
               Features
+            </button>
+            <button
+              onClick={onGoToGuide}
+              className="text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
+            >
+              Syntax Guide
             </button>
             <div className="relative group/link">
               <span className="text-sm font-medium text-zinc-400 dark:text-zinc-600 cursor-not-allowed">Templates</span>
@@ -439,6 +445,14 @@ export default function Home({ onGoToEditor, onGoToDocs, theme, onToggleTheme }:
                     className="text-sm text-zinc-500 hover:text-indigo-600 dark:hover:text-white transition-colors"
                   >
                     Documentation
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={onGoToGuide}
+                    className="text-sm text-zinc-500 hover:text-indigo-600 dark:hover:text-white transition-colors"
+                  >
+                    Syntax Guide
                   </button>
                 </li>
                 <li><a href="#" className="text-sm text-zinc-500 hover:text-indigo-600 dark:hover:text-white transition-colors">Help Center</a></li>

@@ -96,7 +96,20 @@ div.prose tr:nth-child(even) {
 }
 
 .prose pre {
-  @apply my-4;
+  @apply my-4 rounded-lg border-none shadow-none;
+  background: #f5f5f5 !important;
+}
+
+:where(.dark, .dark *) .prose pre {
+  background: #1a1b26 !important;
+}
+
+.prose pre code {
+  @apply border-none shadow-none p-0 bg-transparent text-sm leading-relaxed;
+}
+
+.prose :not(pre) > code {
+  @apply border-none bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded text-[0.875em] font-medium;
 }
 
 /* Break control (#9) — prevent awkward splits inside prose elements */
