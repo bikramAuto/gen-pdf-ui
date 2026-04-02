@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Toolbar from './components/Toolbar'
 import Editor from './components/Editor'
+import MobileEditorBar from './components/MobileEditorBar'
 import Preview from './components/Preview'
 import StatusBar from './components/StatusBar'
 import AuthModal from './components/AuthModal'
@@ -902,6 +903,9 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
               top: 0
             }}
           >
+            {isMobile && activeTab === 'editor' && (
+              <MobileEditorBar editorRef={editorRef} />
+            )}
             <Editor
               value={content}
               onChange={handleChange}

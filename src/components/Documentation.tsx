@@ -242,6 +242,53 @@ const DOCS: DocSection[] = [
         </div>
       </div>
     )
+  },
+  {
+    id: 'mobile',
+    title: 'Mobile Editing',
+    content: (
+      <div className="space-y-6">
+        <p className="text-zinc-600 dark:text-zinc-400">
+          BikDocs includes a dedicated touch-friendly toolbar for mobile users. Since phones lack physical keyboards for shortcuts like <code className="bg-zinc-100 dark:bg-zinc-800 px-1 rounded text-xs">Ctrl+A</code> or <code className="bg-zinc-100 dark:bg-zinc-800 px-1 rounded text-xs">Ctrl+B</code>, the mobile editing bar provides one-tap access to all essential actions.
+        </p>
+        <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800/50">
+          <h4 className="font-bold text-sm text-blue-700 dark:text-blue-300 mb-3">Mobile Toolbar Actions</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {[
+              { icon: '☰', label: 'Select All', desc: 'Select entire document' },
+              { icon: '↺', label: 'Undo', desc: 'Reverse last action' },
+              { icon: '↻', label: 'Redo', desc: 'Redo undone action' },
+              { icon: 'B', label: 'Bold', desc: 'Wrap in **bold**' },
+              { icon: 'I', label: 'Italic', desc: 'Wrap in *italic*' },
+              { icon: 'S', label: 'Strikethrough', desc: 'Wrap in ~~strike~~' },
+              { icon: '</>', label: 'Code', desc: 'Wrap in `backticks`' },
+              { icon: 'H2', label: 'Heading', desc: 'Insert ## at line start' },
+              { icon: '•', label: 'Bullet List', desc: 'Insert - at line start' },
+              { icon: '🔗', label: 'Link', desc: 'Wrap as [text](url)' },
+              { icon: '❝', label: 'Blockquote', desc: 'Insert > at line start' },
+            ].map(item => (
+              <div key={item.label} className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/60 dark:bg-zinc-900/40">
+                <span className="w-7 h-7 rounded-md bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs font-extrabold shrink-0">{item.icon}</span>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold truncate">{item.label}</div>
+                  <div className="text-[10px] text-zinc-400 truncate">{item.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700">
+            <h4 className="font-bold text-sm mb-2">Automatic Detection</h4>
+            <p className="text-xs text-zinc-500 leading-relaxed">The mobile toolbar appears automatically on screens narrower than 768px. No setup required — it adapts instantly when you switch between devices.</p>
+          </div>
+          <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700">
+            <h4 className="font-bold text-sm mb-2">Full Undo Support</h4>
+            <p className="text-xs text-zinc-500 leading-relaxed">All toolbar actions integrate with Monaco&apos;s native undo stack. Tap Undo to reverse any formatting applied via the toolbar — everything is tracked seamlessly.</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 ]
 
