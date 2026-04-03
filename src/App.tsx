@@ -892,6 +892,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
             onOpenDocuments={handleOpenDocuments}
             onOpenLayout={() => setIsLayoutModalOpen(true)}
             onRename={handleRenameDocument}
+            onGoToHome={onGoToHome || (() => {})}
           />
         </div>
         <div

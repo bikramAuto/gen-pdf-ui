@@ -39,6 +39,7 @@ interface ToolbarProps {
   onOpenDocuments: () => void
   onOpenLayout: () => void
   onRename: (newName: string) => void
+  onGoToHome: () => void
 }
 
 export default function Toolbar({
@@ -77,6 +78,7 @@ export default function Toolbar({
   onOpenDocuments,
   onOpenLayout,
   onRename,
+  onGoToHome,
 }: ToolbarProps) {
 
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
@@ -427,11 +429,15 @@ export default function Toolbar({
       {/* BOTTOM ROW (Mobile) / Actions (Desktop) */}
       <div className="relative flex items-center shrink min-w-0 order-last md:order-first border-t border-gray-100 dark:border-gray-800 md:border-none pt-1 md:pt-0">
         <div className="flex items-center gap-0.5 md:gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <div className="hidden md:flex items-center text-blue-600 dark:text-blue-400 mr-2 md:mr-3">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <rect x="2" y="4" width="20" height="16" rx="4" fill="currentColor" opacity="0.15" />
-              <path d="M6 8h12M6 12h8M6 16h10" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-            </svg>
+          <div 
+            className="flex items-center text-blue-600 dark:text-blue-400 mr-2 md:mr-3 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={onGoToHome}
+          >
+            <img 
+              src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+              alt="BikDocs" 
+              className="w-7 h-7 md:w-8 md:h-8 object-contain" 
+            />
           </div>
 
           <button

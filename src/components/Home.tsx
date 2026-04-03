@@ -101,7 +101,11 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
       case 'about':
         return (
           <div className="space-y-6 text-center">
-            <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-3xl font-bold mx-auto mb-6 shadow-xl shadow-indigo-500/20">B</div>
+            <img 
+              src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+              alt="BikDocs" 
+              className="w-20 h-20 mx-auto mb-6 object-contain" 
+            />
             <h2 className="text-2xl font-bold">About BikDocs</h2>
             <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
               BikDocs was born out of frustration with existing Markdown editors that failed to understand physical page constraints. We believe that writing in plain text shouldn't mean sacrificing the beauty and precision of the final printed document.
@@ -138,11 +142,12 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-[#0b0d12]/70 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800/50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/20">
-              B
-            </div>
-            <span className="font-bold text-lg tracking-tight">BikDocs</span>
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <img 
+              src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+              alt="BikDocs" 
+              className="h-10 w-auto" 
+            />
           </div>
 
           <div className="hidden md:flex items-center gap-8">
@@ -414,9 +419,15 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-20">
             <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold">B</div>
-                <span className="font-bold text-lg tracking-tight">BikDocs</span>
+              <div 
+                className="flex items-center gap-2 mb-6 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              >
+                <img 
+                  src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+                  alt="BikDocs" 
+                  className="h-10 w-auto" 
+                />
               </div>
               <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-xs">
                 The premium physical Markdown editor for professionals who demand results.

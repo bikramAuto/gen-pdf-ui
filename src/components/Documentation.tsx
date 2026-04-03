@@ -348,8 +348,11 @@ export default function Documentation({ onBack, onGoToEditor, onGoToGuide, theme
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-[#0b0d12]/70 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800/50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={onBack}>
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold">B</div>
-            <span className="font-bold text-lg tracking-tight">BikDocs</span>
+            <img 
+              src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+              alt="BikDocs" 
+              className="h-10 w-auto" 
+            />
             <span className="ml-2 px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Docs</span>
           </div>
           
@@ -454,9 +457,15 @@ export default function Documentation({ onBack, onGoToEditor, onGoToGuide, theme
 
       <footer className="border-t border-zinc-100 dark:border-zinc-800 py-10 relative z-10 bg-white dark:bg-[#0b0d12]">
          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2">
-               <div className="w-6 h-6 rounded bg-indigo-600 flex items-center justify-center text-white text-[10px] font-bold">B</div>
-               <span className="font-bold text-sm tracking-tight">BikDocs</span>
+            <div 
+              className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={onBack}
+            >
+               <img 
+                 src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+                 alt="BikDocs" 
+                 className="h-8 w-auto" 
+               />
             </div>
             <p className="text-xs text-zinc-400">&copy; 2026 BikDocs. All rights reserved.</p>
          </div>

@@ -135,7 +135,7 @@ div.prose tr:nth-child(even) {
 }
 
 .prose :not(pre) > code {
-  @apply border-none bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded text-[0.875em] font-medium;
+  @apply bg-[#f8f8f8] dark:bg-[#1a1d21] border border-gray-200 dark:border-white/10 px-[4px] py-[2px] rounded-[4px] text-[0.9em] font-medium font-mono text-[#1d1c1d] dark:text-[#d1d2d3] before:content-none after:content-none;
 }
 
 /* Break control (#9) — prevent awkward splits inside prose elements */
