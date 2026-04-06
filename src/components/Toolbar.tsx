@@ -438,7 +438,7 @@ export default function Toolbar({
 
       {/* BOTTOM ROW (Mobile) / Actions (Desktop) */}
       <div className="relative flex items-center shrink min-w-0 order-last md:order-first border-t border-gray-100 dark:border-gray-800 md:border-none pt-1 md:pt-0">
-        <div className="flex items-center gap-0.5 md:gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex items-center gap-0.5 md:gap-1.5 md:overflow-visible overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div 
             className="hidden md:flex items-center text-brand-600 dark:text-brand-400 mr-2 md:mr-3 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={onGoToHome}
@@ -474,10 +474,15 @@ export default function Toolbar({
             <span className="hidden lg:inline text-xs font-medium">Layout</span>
           </button>
 
-          <button className={`${btnBase} opacity-50 cursor-not-allowed`} disabled title="Coming Soon">
-            <IconGitHub />
-            <span className="hidden lg:inline text-xs font-medium">GitHub</span>
-          </button>
+          <div className="relative group">
+            <button className={`${btnBase} opacity-50 cursor-pointer`} aria-label="GitHub integration coming soon">
+              <IconGitHub />
+              <span className="hidden lg:inline text-xs font-medium">GitHub</span>
+            </button>
+            <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 px-3 py-1.5 bg-zinc-900 dark:bg-zinc-800 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-[1001] shadow-xl border border-white/10 translate-y-1 group-hover:translate-y-0">
+              Coming Soon
+            </div>
+          </div>
 
           <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
 

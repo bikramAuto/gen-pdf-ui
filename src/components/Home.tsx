@@ -165,13 +165,13 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
             </button>
             <div className="relative group/link">
               <span className="text-sm font-medium text-zinc-400 dark:text-zinc-600 cursor-not-allowed">Templates</span>
-              <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 text-[9px] font-bold uppercase tracking-wider opacity-0 group-hover/link:opacity-100 transition-all duration-200 whitespace-nowrap shadow-xl">
+              <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 text-[9px] font-bold uppercase tracking-wider opacity-0 group-hover/link:opacity-100 transition-all duration-200 whitespace-nowrap">
                 Coming Soon
               </span>
             </div>
             <div className="relative group/link">
               <span className="text-sm font-medium text-zinc-400 dark:text-zinc-600 cursor-not-allowed">Pricing</span>
-              <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 text-[9px] font-bold uppercase tracking-wider opacity-0 group-hover/link:opacity-100 transition-all duration-200 whitespace-nowrap shadow-xl">
+              <span className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 text-[9px] font-bold uppercase tracking-wider opacity-0 group-hover/link:opacity-100 transition-all duration-200 whitespace-nowrap">
                 Coming Soon
               </span>
             </div>
@@ -190,7 +190,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
             </button>
             <button
               onClick={onGoToEditor}
-              className="px-5 py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-lg shadow-brand-500/25 transition-all active:scale-95"
+              className="px-5 py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold transition-all active:scale-95"
             >
               Start Writing
             </button>
@@ -217,7 +217,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={onGoToEditor}
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-brand-600 hover:bg-brand-700 text-white font-bold text-lg shadow-xl shadow-brand-500/20 transition-all hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center gap-2 group"
+              className="w-full sm:w-auto px-8 py-4 rounded-full bg-brand-600 hover:bg-brand-700 text-white font-bold text-lg transition-all hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center gap-2 group"
             >
               Start Writing Now
               <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
@@ -235,7 +235,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
         {/* Mockup */}
         <section className="max-w-6xl mx-auto px-6 mb-32 relative">
           <div className="absolute inset-0 bg-brand-500/10 blur-[120px] rounded-full -z-10" />
-          <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-2xl overflow-hidden backdrop-blur-sm group">
+          <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 overflow-hidden backdrop-blur-sm group">
             {/* Browser Header */}
             <div className="h-12 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80 flex items-center px-6 gap-2">
               <div className="flex gap-1.5">
@@ -257,7 +257,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
                 </div>
               </div>
               <div className="p-4 md:p-8 bg-zinc-50 dark:bg-zinc-950/50 flex items-center justify-center overflow-hidden">
-                <div className="w-full max-w-sm mx-auto bg-white dark:bg-zinc-900 shadow-lg border border-zinc-200 dark:border-zinc-800 aspect-[1/1.41] p-6 md:p-8 transform scale-90 md:scale-100">
+                <div className="w-full max-w-sm mx-auto bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 aspect-[1/1.41] p-6 md:p-8 transform scale-90 md:scale-100">
                   <h1 className="text-xl md:text-2xl font-bold mb-4">Project Proposal</h1>
                   <h2 className="text-md md:text-lg font-semibold mb-2">Executive Summary</h2>
                   <p className="text-[10px] md:text-[12px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
@@ -320,7 +320,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
           <div className="flex-1 w-full scale-110 md:scale-100">
             <div className="relative aspect-square bg-gradient-to-br from-brand-500/10 to-brand-300/10 rounded-full flex items-center justify-center">
               <div className="absolute inset-0 bg-white/20 dark:bg-transparent backdrop-blur-3xl rounded-full border border-white dark:border-zinc-800" />
-              <div className="relative w-2/3 h-3/4 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 transform rotate-3 p-8 flex flex-col">
+              <div className="relative w-2/3 h-3/4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 transform rotate-3 p-8 flex flex-col">
                 <div className="w-full h-1 bg-zinc-100 dark:bg-zinc-800 mb-2" />
                 <div className="w-2/3 h-1 bg-zinc-100 dark:bg-zinc-800 mb-8" />
                 <div className="flex-1 overflow-hidden">
@@ -360,7 +360,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
                   key={type.id}
                   onClick={() => setActiveDocType(type)}
                   className={`flex-1 text-left px-6 py-4 rounded-2xl text-sm font-bold transition-all whitespace-nowrap ${activeDocType.id === type.id
-                      ? 'bg-white dark:bg-zinc-800 shadow-xl shadow-zinc-200/50 dark:shadow-none border border-zinc-200 dark:border-zinc-700 text-brand-600 dark:text-white'
+                      ? 'bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-brand-600 dark:text-white'
                       : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
                     }`}
                 >
@@ -373,7 +373,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
               <p className="text-lg text-zinc-500 dark:text-zinc-400 leading-relaxed mb-10">
                 {activeDocType.desc}
               </p>
-              <div className="bg-white dark:bg-zinc-950 rounded-2xl p-6 shadow-inner border border-zinc-100 dark:border-zinc-800 font-mono text-sm overflow-x-auto">
+              <div className="bg-white dark:bg-zinc-950 rounded-2xl p-6 border border-zinc-100 dark:border-zinc-800 font-mono text-sm overflow-x-auto">
                 <div className="flex gap-2 mb-4">
                   <div className="w-2.5 h-2.5 rounded-full bg-zinc-200 dark:bg-zinc-800" />
                   <div className="w-2.5 h-2.5 rounded-full bg-zinc-200 dark:bg-zinc-800" />
