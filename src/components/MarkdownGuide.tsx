@@ -468,11 +468,13 @@ ___`,
 export default function MarkdownGuide({
   onBack,
   onGoToEditor,
+  onGoToDocs,
   theme,
   onToggleTheme,
 }: {
   onBack: () => void
   onGoToEditor: () => void
+  onGoToDocs: () => void
   theme: 'light' | 'dark'
   onToggleTheme: () => void
 }) {
@@ -531,15 +533,20 @@ export default function MarkdownGuide({
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-[#0b0d12]/70 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800/50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={onBack}>
+          <div className="flex items-center gap-2">
             <img 
               src={theme === 'dark' ? "/bikdocs logo white.svg" : "/bikdocs logo dark.svg"} 
               alt="BikDocs" 
-              className="h-10 w-auto" 
+              className="h-10 w-auto cursor-pointer" 
+              onClick={onBack}
             />
-            <span className="ml-2 px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-900/30 text-[10px] text-brand-600 dark:text-brand-400 font-bold uppercase tracking-wider border border-brand-100 dark:border-brand-800">
-              Guide
-            </span>
+            <button
+              onClick={onGoToDocs}
+              className="ml-2 px-2 py-0.5 rounded-md bg-brand-50 hover:bg-brand-100 dark:bg-brand-900/30 dark:hover:bg-brand-900/50 text-[10px] text-brand-600 dark:text-brand-400 font-bold uppercase tracking-wider border border-brand-100 dark:border-brand-800 transition-all active:scale-95"
+              title="Go to Documentation"
+            >
+              Docs
+            </button>
           </div>
 
           <div className="flex items-center gap-4">
@@ -553,16 +560,7 @@ export default function MarkdownGuide({
                 <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               )}
             </button>
-            <button
-              onClick={onBack}
-              className="flex items-center gap-2 text-sm font-bold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
-              title="Back Home"
-            >
-              <svg className="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              <span className="hidden md:inline">Back Home</span>
-            </button>
+
             <button
               onClick={onGoToEditor}
               className="flex items-center gap-2 px-3 py-2 md:px-5 md:py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-lg shadow-brand-500/25 transition-all active:scale-95"

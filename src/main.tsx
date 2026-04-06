@@ -37,7 +37,7 @@ function Root() {
   }
 
   if (view === 'markdown-guide') {
-    return <MarkdownGuide onBack={() => setView('home')} onGoToEditor={() => setView('editor')} theme={theme} onToggleTheme={toggleTheme} />
+    return <MarkdownGuide onBack={() => setView('home')} onGoToEditor={() => setView('editor')} onGoToDocs={() => setView('documentation')} theme={theme} onToggleTheme={toggleTheme} />
   }
 
   return <Home onGoToEditor={() => setView('editor')} onGoToDocs={() => setView('documentation')} onGoToGuide={() => setView('markdown-guide')} theme={theme} onToggleTheme={toggleTheme} />
