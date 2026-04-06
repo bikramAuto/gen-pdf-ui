@@ -127,6 +127,17 @@ export default function Toolbar({
 
       {/* TOP ROW (Mobile) / Branding + Nav + Account (Desktop) */}
       <div className="flex items-center justify-between md:contents order-first pb-1 md:pb-0">
+        <div 
+          className="md:hidden flex items-center text-blue-600 dark:text-blue-400 mr-2 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={onGoToHome}
+        >
+          <img 
+            src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+            alt="BikDocs" 
+            className="w-8 h-8 object-contain" 
+          />
+        </div>
+
         {/* CENTER-ISH (Tabs & Title) */}
         <div className="flex flex-col items-start min-w-0 md:mx-4 flex-1">
           <div className="flex items-center gap-1.5 max-w-full">
@@ -430,7 +441,7 @@ export default function Toolbar({
       <div className="relative flex items-center shrink min-w-0 order-last md:order-first border-t border-gray-100 dark:border-gray-800 md:border-none pt-1 md:pt-0">
         <div className="flex items-center gap-0.5 md:gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div 
-            className="flex items-center text-blue-600 dark:text-blue-400 mr-2 md:mr-3 cursor-pointer hover:opacity-80 transition-opacity"
+            className="hidden md:flex items-center text-blue-600 dark:text-blue-400 mr-2 md:mr-3 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={onGoToHome}
           >
             <img 
@@ -916,3 +927,4 @@ function IconSettings() {
     </svg>
   )
 }
+
