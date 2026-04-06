@@ -51,7 +51,7 @@ function CodeBlock({ code }: { code: string }) {
         <span className="ml-3 text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Markdown</span>
       </div>
       <CopyButton text={code} />
-      <pre className="px-4 py-4 text-sm font-mono text-indigo-300 overflow-x-auto leading-relaxed whitespace-pre-wrap">
+      <pre className="px-4 py-4 text-sm font-mono text-brand-300 overflow-x-auto leading-relaxed whitespace-pre-wrap">
         {code}
       </pre>
     </div>
@@ -124,7 +124,7 @@ const GUIDE_SECTIONS: GuideSection[] = [
       {
         label: 'Inline Code',
         syntax: 'Use `inline code` in a sentence.',
-        rendered: <p>Use <code className="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono text-indigo-600 dark:text-indigo-400">inline code</code> in a sentence.</p>
+        rendered: <p>Use <code className="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono text-brand-600 dark:text-brand-400">inline code</code> in a sentence.</p>
       },
       {
         label: 'Subscript, Superscript & Highlight',
@@ -186,7 +186,7 @@ X^2^ (superscript)
 - [ ] Another task`,
         rendered: (
           <ul className="space-y-1 pl-1">
-            <li className="flex items-center gap-2"><input type="checkbox" checked readOnly className="rounded accent-indigo-500" /><span>Completed task</span></li>
+            <li className="flex items-center gap-2"><input type="checkbox" checked readOnly className="rounded accent-brand-500" /><span>Completed task</span></li>
             <li className="flex items-center gap-2"><input type="checkbox" readOnly className="rounded" /><span>Incomplete task</span></li>
             <li className="flex items-center gap-2"><input type="checkbox" readOnly className="rounded" /><span>Another task</span></li>
           </ul>
@@ -205,8 +205,8 @@ X^2^ (superscript)
 [Link with Title](https://example.com "Hover title")`,
         rendered: (
           <div className="space-y-1">
-            <p><a href="#" className="text-indigo-600 dark:text-indigo-400 underline hover:no-underline">Link Text</a></p>
-            <p><a href="#" title="Hover title" className="text-indigo-600 dark:text-indigo-400 underline hover:no-underline">Link with Title</a></p>
+            <p><a href="#" className="text-brand-600 dark:text-brand-400 underline hover:no-underline">Link Text</a></p>
+            <p><a href="#" title="Hover title" className="text-brand-600 dark:text-brand-400 underline hover:no-underline">Link with Title</a></p>
           </div>
         )
       },
@@ -233,7 +233,7 @@ X^2^ (superscript)
         syntax: `> This is a blockquote.
 > It can span multiple lines.`,
         rendered: (
-          <blockquote className="border-l-4 border-indigo-400 pl-4 text-zinc-600 dark:text-zinc-400 italic">
+          <blockquote className="border-l-4 border-brand-400 pl-4 text-zinc-600 dark:text-zinc-400 italic">
             This is a blockquote.<br />It can span multiple lines.
           </blockquote>
         )
@@ -246,7 +246,7 @@ X^2^ (superscript)
         rendered: (
           <blockquote className="border-l-4 border-indigo-400 pl-4 text-zinc-600 dark:text-zinc-400 italic">
             Outer quote
-            <blockquote className="border-l-4 border-purple-400 pl-4 mt-2 not-italic">
+            <blockquote className="border-l-4 border-brand-300 pl-4 mt-2 not-italic">
               Nested quote
               <blockquote className="border-l-4 border-pink-400 pl-4 mt-2">
                 Deeply nested
@@ -267,9 +267,9 @@ X^2^ (superscript)
         syntax: "```javascript\nfunction greet(name) {\n  return `Hello, ${name}!`;\n}\n```",
         rendered: (
           <div className="rounded-lg bg-zinc-950 p-4 font-mono text-sm overflow-x-auto">
-            <div className="text-blue-400">function</div>
+            <div className="text-brand-400">function</div>
             <div className="pl-2"><span className="text-yellow-300">greet</span><span className="text-zinc-400">(</span><span className="text-orange-300">name</span><span className="text-zinc-400">)</span> <span className="text-zinc-500">{'{'}</span></div>
-            <div className="pl-4"><span className="text-purple-400">return</span> <span className="text-emerald-400">{`\`Hello, \${name}!\``}</span><span className="text-zinc-500">;</span></div>
+            <div className="pl-4"><span className="text-brand-300">return</span> <span className="text-emerald-400">{`\`Hello, \${name}!\``}</span><span className="text-zinc-500">;</span></div>
             <div className="pl-2 text-zinc-500">{'}'}</div>
           </div>
         )
@@ -282,7 +282,7 @@ X^2^ (superscript)
         rendered: (
           <div className="rounded-lg bg-zinc-950 p-4 font-mono text-sm text-zinc-300">
             <div className="text-zinc-500">// Indent with 4 spaces</div>
-            <div><span className="text-purple-400">const</span> x = <span className="text-orange-300">42</span>;</div>
+            <div><span className="text-brand-300">const</span> x = <span className="text-orange-300">42</span>;</div>
             <div>console.<span className="text-yellow-300">log</span>(x);</div>
           </div>
         )
@@ -377,9 +377,9 @@ ___`,
 [^1]: This is the footnote content.`,
         rendered: (
           <div>
-            <p>Here is a sentence with a footnote.<sup className="text-indigo-500 font-bold cursor-pointer">1</sup></p>
+            <p>Here is a sentence with a footnote.<sup className="text-brand-500 font-bold cursor-pointer">1</sup></p>
             <div className="mt-4 pt-3 border-t border-zinc-200 dark:border-zinc-700 text-sm text-zinc-500">
-              <sup className="text-indigo-500 font-bold">1</sup> This is the footnote content.
+              <sup className="text-brand-500 font-bold">1</sup> This is the footnote content.
             </div>
           </div>
         )
@@ -436,11 +436,11 @@ ___`,
         label: 'Page Break',
         syntax: `<div class="page-break"></div>`,
         rendered: (
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800">
-            <svg className="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-brand-50 to-brand-100 dark:from-brand-900/20 dark:to-brand-800/20 border border-brand-100 dark:border-brand-800">
+            <svg className="w-6 h-6 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
             <div>
-              <p className="font-bold text-sm text-indigo-700 dark:text-indigo-300">Forces a page break in PDF output</p>
-              <p className="text-xs text-indigo-500/70 dark:text-indigo-400/50 mt-0.5">Content after this tag starts on a new page</p>
+              <p className="font-bold text-sm text-brand-700 dark:text-brand-300">Forces a page break in PDF output</p>
+              <p className="text-xs text-brand-500/70 dark:text-brand-400/50 mt-0.5">Content after this tag starts on a new page</p>
             </div>
           </div>
         )
@@ -533,11 +533,11 @@ export default function MarkdownGuide({
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={onBack}>
             <img 
-              src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+              src={theme === 'dark' ? "/bikdocs logo white.svg" : "/bikdocs logo dark.svg"} 
               alt="BikDocs" 
               className="h-10 w-auto" 
             />
-            <span className="ml-2 px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-900/30 text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider border border-indigo-100 dark:border-indigo-800">
+            <span className="ml-2 px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-900/30 text-[10px] text-brand-600 dark:text-brand-400 font-bold uppercase tracking-wider border border-brand-100 dark:border-brand-800">
               Guide
             </span>
           </div>
@@ -565,7 +565,7 @@ export default function MarkdownGuide({
             </button>
             <button
               onClick={onGoToEditor}
-              className="flex items-center gap-2 px-3 py-2 md:px-5 md:py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-lg shadow-indigo-500/25 transition-all active:scale-95"
+              className="flex items-center gap-2 px-3 py-2 md:px-5 md:py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-lg shadow-brand-500/25 transition-all active:scale-95"
               title="Start Writing"
             >
               <svg className="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -589,11 +589,11 @@ export default function MarkdownGuide({
                   onClick={() => handleScrollTo(sec.id)}
                   className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ease-out flex items-center gap-2.5 ${
                     activeSection === sec.id
-                      ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 shadow-sm'
+                      ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 border border-brand-100 dark:border-brand-800 shadow-sm'
                       : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 border border-transparent'
                   }`}
                 >
-                  <span className={`transition-colors duration-300 ${activeSection === sec.id ? 'text-indigo-500' : 'text-zinc-300 dark:text-zinc-600'}`}>
+                  <span className={`transition-colors duration-300 ${activeSection === sec.id ? 'text-brand-500' : 'text-zinc-300 dark:text-zinc-600'}`}>
                     {sec.icon}
                   </span>
                   {sec.title}
@@ -606,7 +606,7 @@ export default function MarkdownGuide({
           <main className="flex-1 min-w-0 max-w-3xl">
             {/* Header */}
             <div className="mb-16">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 text-[11px] font-bold uppercase tracking-wider mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 border border-brand-100 dark:border-brand-800 text-brand-600 dark:text-brand-300 text-[11px] font-bold uppercase tracking-wider mb-6">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
                 Reference Guide
               </div>
@@ -617,8 +617,8 @@ export default function MarkdownGuide({
             </div>
 
             {/* Quick Reference Card */}
-            <div className="mb-16 p-6 md:p-8 rounded-2xl bg-gradient-to-br from-indigo-50/80 to-purple-50/80 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800/50">
-              <h3 className="font-bold text-sm text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-4">Quick Reference</h3>
+            <div className="mb-16 p-6 md:p-8 rounded-2xl bg-gradient-to-br from-brand-50/80 to-brand-100/80 dark:from-brand-900/20 dark:to-brand-800/20 border border-brand-100 dark:border-brand-800/50">
+              <h3 className="font-bold text-sm text-brand-600 dark:text-brand-400 uppercase tracking-widest mb-4">Quick Reference</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {[
                   { syntax: '# H1', desc: 'Heading 1' },
@@ -634,8 +634,8 @@ export default function MarkdownGuide({
                   { syntax: 'H~2~O', desc: 'Subscript' },
                   { syntax: '---', desc: 'Rule' },
                 ].map((item) => (
-                  <div key={item.syntax} className="flex items-center gap-2 px-2.5 py-2 rounded-xl bg-white/60 dark:bg-zinc-900/40 backdrop-blur-sm group/item hover:bg-white dark:hover:bg-zinc-900 transition-all duration-300 border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900">
-                    <code className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-zinc-950 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-800/50 shrink-0 group-hover/item:border-indigo-300 dark:group-hover/item:border-indigo-500 transition-colors">
+                  <div key={item.syntax} className="flex items-center gap-2 px-2.5 py-2 rounded-xl bg-white/60 dark:bg-zinc-900/40 backdrop-blur-sm group/item hover:bg-white dark:hover:bg-zinc-900 transition-all duration-300 border border-transparent hover:border-brand-100 dark:hover:border-brand-900">
+                    <code className="text-[10px] font-mono font-bold text-brand-600 dark:text-brand-400 bg-white dark:bg-zinc-950 px-1.5 py-0.5 rounded border border-brand-100 dark:border-brand-800/50 shrink-0 group-hover/item:border-brand-300 dark:group-hover/item:border-brand-500 transition-colors">
                       {item.syntax}
                     </code>
                     <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold truncate tracking-tight">{item.desc}</span>
@@ -649,7 +649,7 @@ export default function MarkdownGuide({
               {GUIDE_SECTIONS.map((section) => (
                 <section key={section.id} id={`guide-${section.id}`} className="scroll-mt-32">
                   <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
-                    <span className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 flex items-center justify-center border border-indigo-100 dark:border-indigo-800">
+                    <span className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-900/30 text-brand-500 flex items-center justify-center border border-brand-100 dark:border-brand-800">
                       {section.icon}
                     </span>
                     {section.title}
@@ -659,7 +659,7 @@ export default function MarkdownGuide({
                     {section.items.map((item, idx) => (
                       <div key={idx}>
                         <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-brand-400" />
                           {item.label}
                         </h3>
                         <CodeBlock code={item.syntax} />
@@ -672,16 +672,16 @@ export default function MarkdownGuide({
             </div>
 
             {/* CTA Footer */}
-            <div className="mt-32 p-12 rounded-[32px] bg-indigo-600 text-white text-center shadow-2xl shadow-indigo-500/20 relative overflow-hidden">
+            <div className="mt-32 p-12 rounded-[32px] bg-brand-600 text-white text-center shadow-2xl shadow-brand-500/20 relative overflow-hidden">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_white_0.1,_transparent_0)] bg-[size:40px_40px] opacity-10" />
               <div className="relative z-10">
                 <h3 className="text-3xl font-bold mb-6">Ready to try it out?</h3>
-                <p className="text-indigo-100 mb-8 max-w-xs mx-auto">
+                <p className="text-brand-100 mb-8 max-w-xs mx-auto">
                   Put this syntax to use in BikDocs and see your documents come to life.
                 </p>
                 <button
                   onClick={onGoToEditor}
-                  className="px-10 py-4 rounded-full bg-white text-indigo-600 font-bold shadow-xl hover:bg-indigo-50 transition-all active:scale-95"
+                  className="px-10 py-4 rounded-full bg-white text-brand-600 font-bold shadow-xl hover:bg-brand-50 transition-all active:scale-95"
                 >
                   Open Editor
                 </button>
@@ -699,7 +699,7 @@ export default function MarkdownGuide({
             onClick={onBack}
           >
             <img 
-              src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+              src={theme === 'dark' ? "/bikdocs logo white.svg" : "/bikdocs logo dark.svg"} 
               alt="BikDocs" 
               className="h-8 w-auto" 
             />

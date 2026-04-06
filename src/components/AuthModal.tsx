@@ -124,7 +124,7 @@ export default function AuthModal({ isOpen, onClose, initialMode, onAuthSuccess 
                 type="text"
                 required
                 disabled={isAnyLoading}
-                className="w-full bg-white dark:bg-[#181A1F] border border-zinc-200/80 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[14px] font-medium placeholder-zinc-400 dark:placeholder-zinc-500 rounded-2xl h-[56px] px-5 focus:border-blue-500/50 dark:focus:border-blue-500/50 transition-colors shadow-sm dark:shadow-none disabled:opacity-50"
+                className="w-full bg-white dark:bg-[#181A1F] border border-zinc-200/80 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[14px] font-medium placeholder-zinc-400 dark:placeholder-zinc-500 rounded-2xl h-[56px] px-5 focus:border-brand-500/50 dark:focus:border-brand-500/50 transition-colors shadow-sm dark:shadow-none disabled:opacity-50"
                 placeholder="Full Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -138,7 +138,7 @@ export default function AuthModal({ isOpen, onClose, initialMode, onAuthSuccess 
               type="email"
               required
               disabled={isAnyLoading}
-              className="w-full bg-white dark:bg-[#181A1F] border border-zinc-200/80 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[14px] font-medium placeholder-zinc-400 dark:placeholder-zinc-500 rounded-full h-[60px] pt-4 px-5 focus:border-blue-500/50 dark:focus:border-blue-500/50 transition-colors custom-input shadow-sm dark:shadow-none disabled:opacity-50"
+              className="w-full bg-white dark:bg-[#181A1F] border border-zinc-200/80 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[14px] font-medium placeholder-zinc-400 dark:placeholder-zinc-500 rounded-full h-[60px] pt-4 px-5 focus:border-brand-500/50 dark:focus:border-brand-500/50 transition-colors custom-input shadow-sm dark:shadow-none disabled:opacity-50"
               placeholder="username@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -147,7 +147,7 @@ export default function AuthModal({ isOpen, onClose, initialMode, onAuthSuccess 
               <button
                 type="submit"
                 disabled={isAnyLoading}
-                className="absolute right-[6px] top-[6px] bottom-[6px] w-[48px] rounded-full bg-blue-500 hover:bg-blue-400 transition-colors flex items-center justify-center text-white shadow-[0_4px_14px_rgba(59,130,246,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="absolute right-[6px] top-[6px] bottom-[6px] w-[48px] rounded-full bg-brand-500 hover:bg-brand-400 transition-colors flex items-center justify-center text-white shadow-[0_4px_14px_rgba(52,103,57,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -165,7 +165,7 @@ export default function AuthModal({ isOpen, onClose, initialMode, onAuthSuccess 
                 type="password"
                 required
                 disabled={isAnyLoading}
-                className="w-full bg-white dark:bg-[#181A1F] border border-zinc-200/80 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[14px] font-medium placeholder-zinc-400 dark:placeholder-zinc-500 rounded-full h-[60px] pt-4 px-5 focus:border-blue-500/50 dark:focus:border-blue-500/50 transition-colors custom-input shadow-sm dark:shadow-none disabled:opacity-50"
+                className="w-full bg-white dark:bg-[#181A1F] border border-zinc-200/80 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[14px] font-medium placeholder-zinc-400 dark:placeholder-zinc-500 rounded-full h-[60px] pt-4 px-5 focus:border-brand-500/50 dark:focus:border-brand-500/50 transition-colors custom-input shadow-sm dark:shadow-none disabled:opacity-50"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -173,7 +173,7 @@ export default function AuthModal({ isOpen, onClose, initialMode, onAuthSuccess 
               <button
                 type="submit"
                 disabled={isAnyLoading}
-                className="absolute right-[6px] top-[6px] bottom-[6px] w-[48px] rounded-full bg-blue-500 hover:bg-blue-400 transition-colors flex items-center justify-center text-white shadow-[0_4px_14px_rgba(59,130,246,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="absolute right-[6px] top-[6px] bottom-[6px] w-[48px] rounded-full bg-brand-500 hover:bg-brand-400 transition-colors flex items-center justify-center text-white shadow-[0_4px_14px_rgba(52,103,57,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -211,7 +211,7 @@ export default function AuthModal({ isOpen, onClose, initialMode, onAuthSuccess 
             </div>
             <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800/40 flex items-center justify-center text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
               {isSocialLoading ? (
-                <div className="w-3 h-3 border-2 border-zinc-400 border-t-zinc-900 rounded-full animate-spin" />
+                <div className="w-3 h-3 border-2 border-zinc-400 border-t-brand-600 rounded-full animate-spin" />
               ) : (
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               )}
@@ -242,7 +242,7 @@ export default function AuthModal({ isOpen, onClose, initialMode, onAuthSuccess 
             <button
               type="button"
               disabled={isAnyLoading}
-              className="text-blue-500 dark:text-blue-400 font-semibold hover:text-blue-400 transition-colors disabled:opacity-50"
+              className="text-brand-500 dark:text-brand-400 font-semibold hover:text-brand-400 transition-colors disabled:opacity-50"
               onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
             >
               {mode === 'signin' ? 'Sign up' : 'Sign in'}

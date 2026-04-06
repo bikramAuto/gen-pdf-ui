@@ -41,7 +41,7 @@ export default function StatusBar({ fileName, content, isDirty }: StatusBarProps
 
         <span className="w-[1px] h-[12px] bg-gray-300 dark:bg-[#3f4451]" />
         <span className="flex items-center gap-[4px]">
-          <span className="text-blue-600 dark:text-blue-500 font-semibold text-[11px]">Markdown</span>
+          <span className="text-brand-600 dark:text-brand-500 font-semibold text-[11px]">Markdown</span>
         </span>
       </div>
     </div>

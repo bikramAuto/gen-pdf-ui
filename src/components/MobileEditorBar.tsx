@@ -77,8 +77,8 @@ export default function MobileEditorBar({ editorRef }: MobileEditorBarProps) {
     editor.focus()
   }
 
-  const btnClass = "flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 active:scale-90 active:bg-blue-100 dark:active:bg-blue-500/20 transition-all border-none cursor-pointer shrink-0"
-  const btnActiveClass = "flex items-center justify-center w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 active:scale-90 transition-all border-none cursor-pointer shrink-0"
+  const btnClass = "flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 active:scale-90 active:bg-brand-100 dark:active:bg-brand-500/20 transition-all border-none cursor-pointer shrink-0"
+  const btnActiveClass = "flex items-center justify-center w-9 h-9 rounded-lg bg-brand-100 dark:bg-brand-500/20 text-brand-600 dark:text-brand-400 active:scale-90 transition-all border-none cursor-pointer shrink-0"
 
   return (
     <div className="flex items-center gap-1.5 px-2 py-1.5 bg-white dark:bg-[#1a1c23] border-b border-gray-200 dark:border-[#2d3139] overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">

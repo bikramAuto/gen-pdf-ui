@@ -732,19 +732,32 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
           animation: modalEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         
-        /* Linear-Tier Design System */
+        /* Linear-Tier Design System - Nature Theme Palette */
         :root {
-          --zinc-50: #fafafa;
-          --zinc-100: #f4f4f5;
-          --zinc-200: #e4e4e7;
-          --zinc-300: #d4d4d8;
-          --zinc-400: #a1a1aa;
-          --zinc-500: #71717a;
-          --zinc-600: #52525b;
-          --zinc-700: #3f3f46;
-          --zinc-800: #27272a;
-          --zinc-900: #18181b;
-          --zinc-950: #09090b;
+          --brand-50: #f4f8f4;
+          --brand-100: #e7f1e7;
+          --brand-200: #cfdfcf;
+          --brand-300: #9fcb98;
+          --brand-400: #79ae6f;
+          --brand-500: #57934a;
+          --brand-600: #346739;
+          --brand-700: #2a522e;
+          --brand-800: #1c351e;
+          --brand-900: #142816;
+          --accent-cream: #f2edc2;
+
+          /* Green-tinted Neutral Scale */
+          --zinc-50: #f8faf8;
+          --zinc-100: #f1f4f1;
+          --zinc-200: #e2e8e2;
+          --zinc-300: #d1dbd1;
+          --zinc-400: #a1b0a1;
+          --zinc-500: #718071;
+          --zinc-600: #526052;
+          --zinc-700: #3f4a3f;
+          --zinc-800: #272d27;
+          --zinc-900: #181d18;
+          --zinc-950: #0d110d;
         }
 
         .font-ui {
@@ -753,16 +766,17 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
         }
 
         .premium-input {
-          @apply bg-zinc-100/5 dark:bg-white/[0.02] border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-[13px] font-medium text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-900/10 dark:focus:ring-white/10 focus:border-zinc-900/30 dark:focus:border-white/30 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200;
+          @apply bg-zinc-100/5 dark:bg-white/[0.02] border border-zinc-200/50 dark:border-zinc-800/50 rounded-xl px-4 py-2 text-[13px] font-medium text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-brand-500/20 dark:focus:ring-brand-400/20 focus:border-brand-500/50 dark:focus:border-brand-400/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200;
         }
 
         .premium-button-primary {
-          @apply bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 px-5 py-2 rounded-xl text-[13px] font-semibold transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-sm;
+          @apply bg-brand-600 dark:bg-brand-400 text-white dark:text-brand-900 px-5 py-2 rounded-xl text-[13px] font-semibold transition-all hover:bg-brand-700 dark:hover:bg-brand-300 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-sm;
         }
 
         .premium-button-secondary {
-          @apply bg-transparent text-zinc-500 dark:text-zinc-400 px-5 py-2 rounded-xl text-[13px] font-medium transition-all hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 active:scale-[0.98];
+          @apply bg-transparent text-zinc-500 dark:text-zinc-400 px-5 py-2 rounded-xl text-[13px] font-medium transition-all hover:bg-zinc-100 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-100 active:scale-[0.98];
         }
+
 
 
 
@@ -978,7 +992,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
 
           {/* Splitter */}
           <div
-            className={`print:hidden hidden md:flex w-[6px] bg-gray-200 dark:bg-gray-800 hover:bg-blue-500 dark:hover:bg-blue-500 cursor-col-resize shrink-0 relative z-[10] transition-colors items-center justify-center group active:bg-blue-600 ${isEditorCollapsed ? '!hidden' : ''}`}
+            className={`print:hidden hidden md:flex w-[6px] bg-gray-200 dark:bg-gray-800 hover:bg-brand-500 dark:hover:bg-brand-500 cursor-col-resize shrink-0 relative z-[10] transition-colors items-center justify-center group active:bg-brand-600 ${isEditorCollapsed ? '!hidden' : ''}`}
             onMouseDown={onMouseDown}
           >
             <div className="w-[2px] h-[24px] bg-gray-400 dark:bg-gray-600 rounded-full group-hover:bg-white transition-colors" />
@@ -1294,14 +1308,14 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
           {/* Header Configuration */}
           <div className="bg-zinc-50/80 dark:bg-[#14161A] border border-zinc-200/80 dark:border-zinc-800/80 rounded-[24px] p-5 space-y-4 shadow-sm dark:shadow-none">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+              <div className="w-1.5 h-1.5 bg-brand-500 rounded-full" />
               <span className="text-[12px] font-semibold text-zinc-900 dark:text-white tracking-widest uppercase">Header</span>
             </div>
 
             <div className="relative group">
               <div className="absolute top-3 left-4 text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pointer-events-none z-10">Text</div>
               <textarea
-                className="w-full bg-white dark:bg-[#1A1C20]/80 border border-zinc-200 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[13px] font-medium placeholder-zinc-400 dark:placeholder-zinc-600 rounded-[16px] min-h-[70px] pt-7 px-4 focus:border-blue-500/50 dark:focus:border-blue-500/50 transition-colors resize-none shadow-sm dark:shadow-none custom-input"
+                className="w-full bg-white dark:bg-[#1A1C20]/80 border border-zinc-200 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[13px] font-medium placeholder-zinc-400 dark:placeholder-zinc-600 rounded-[16px] min-h-[70px] pt-7 px-4 focus:border-brand-500/50 dark:focus:border-brand-500/50 transition-colors resize-none shadow-sm dark:shadow-none custom-input"
                 placeholder="Appears at the top of every page..."
                 value={pdfConfig.headerText}
                 onChange={(e) => setPdfConfig(prev => ({ ...prev, headerText: e.target.value }))}
@@ -1318,21 +1332,21 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
               {!headerBanner ? (
                 <button
                   onClick={() => headerBannerInputRef.current?.click()}
-                  className="w-full h-[60px] bg-white dark:bg-[#1A1C20]/80 border border-dashed border-zinc-300 dark:border-zinc-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 rounded-[16px] flex items-center justify-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors group"
+                  className="w-full h-[60px] bg-white dark:bg-[#1A1C20]/80 border border-dashed border-zinc-300 dark:border-zinc-700/50 hover:border-brand-500/50 dark:hover:border-brand-500/50 rounded-[16px] flex items-center justify-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors group"
                 >
                   <IconHTML size={16} className="opacity-70 group-hover:opacity-100 transition-opacity" />
                   <span className="text-[12px] font-semibold">Upload HTML file</span>
                 </button>
               ) : (
-                <div className="relative rounded-[16px] overflow-hidden group border border-blue-500/30 dark:border-blue-400/30 bg-blue-50/50 dark:bg-blue-500/5 shadow-sm p-4 flex flex-col justify-center h-[60px]">
+                <div className="relative rounded-[16px] overflow-hidden group border border-brand-500/30 dark:border-brand-400/30 bg-brand-50/50 dark:bg-brand-500/5 shadow-sm p-4 flex flex-col justify-center h-[60px]">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                      <IconHTML size={16} className="text-blue-500 dark:text-blue-400" />
+                      <IconHTML size={16} className="text-brand-500 dark:text-brand-400" />
                       <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-[200px]">HTML file active</span>
                     </div>
                     <button
                       onClick={() => headerBannerInputRef.current?.click()}
-                      className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 text-[11px] font-semibold transition-colors"
+                      className="text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300 text-[11px] font-semibold transition-colors"
                     >
                       Change
                     </button>
@@ -1346,14 +1360,14 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
           {/* Footer Configuration */}
           <div className="bg-zinc-50/80 dark:bg-[#14161A] border border-zinc-200/80 dark:border-zinc-800/80 rounded-[24px] p-5 space-y-4 shadow-sm dark:shadow-none">
             <div className="flex items-center gap-2 mb-1">
-              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+              <div className="w-1.5 h-1.5 bg-brand-500 rounded-full" />
               <span className="text-[12px] font-semibold text-zinc-900 dark:text-white tracking-widest uppercase">Footer</span>
             </div>
 
             <div className="relative group">
               <div className="absolute top-3 left-4 text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest pointer-events-none z-10">Text</div>
               <textarea
-                className="w-full bg-white dark:bg-[#1A1C20]/80 border border-zinc-200 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[13px] font-medium placeholder-zinc-400 dark:placeholder-zinc-600 rounded-[16px] min-h-[70px] pt-7 px-4 focus:border-blue-500/50 dark:focus:border-blue-500/50 transition-colors resize-none shadow-sm dark:shadow-none custom-input"
+                className="w-full bg-white dark:bg-[#1A1C20]/80 border border-zinc-200 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[13px] font-medium placeholder-zinc-400 dark:placeholder-zinc-600 rounded-[16px] min-h-[70px] pt-7 px-4 focus:border-brand-500/50 dark:focus:border-brand-500/50 transition-colors resize-none shadow-sm dark:shadow-none custom-input"
                 placeholder="Appears at the bottom of every page..."
                 value={pdfConfig.footerText}
                 onChange={(e) => setPdfConfig(prev => ({ ...prev, footerText: e.target.value }))}
@@ -1370,21 +1384,21 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
               {!footerBanner ? (
                 <button
                   onClick={() => footerBannerInputRef.current?.click()}
-                  className="w-full h-[60px] bg-white dark:bg-[#1A1C20]/80 border border-dashed border-zinc-300 dark:border-zinc-700/50 hover:border-blue-500/50 dark:hover:border-blue-500/50 rounded-[16px] flex items-center justify-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors group"
+                  className="w-full h-[60px] bg-white dark:bg-[#1A1C20]/80 border border-dashed border-zinc-300 dark:border-zinc-700/50 hover:border-brand-500/50 dark:hover:border-brand-500/50 rounded-[16px] flex items-center justify-center gap-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors group"
                 >
                   <IconHTML size={16} className="opacity-70 group-hover:opacity-100 transition-opacity" />
                   <span className="text-[12px] font-semibold">Upload HTML file</span>
                 </button>
               ) : (
-                <div className="relative rounded-[16px] overflow-hidden group border border-blue-500/30 dark:border-blue-400/30 bg-blue-50/50 dark:bg-blue-500/5 shadow-sm p-4 flex flex-col justify-center h-[60px]">
+                <div className="relative rounded-[16px] overflow-hidden group border border-brand-500/30 dark:border-brand-400/30 bg-brand-50/50 dark:bg-brand-500/5 shadow-sm p-4 flex flex-col justify-center h-[60px]">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                      <IconHTML size={16} className="text-blue-500 dark:text-blue-400" />
+                      <IconHTML size={16} className="text-brand-500 dark:text-brand-400" />
                       <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-[200px]">HTML file active</span>
                     </div>
                     <button
                       onClick={() => footerBannerInputRef.current?.click()}
-                      className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 text-[11px] font-semibold transition-colors"
+                      className="text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300 text-[11px] font-semibold transition-colors"
                     >
                       Change
                     </button>
@@ -1400,7 +1414,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
         {/* Footer action */}
         <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800/50 relative z-10 shrink-0">
           <button
-            className="w-full bg-blue-500 hover:bg-blue-400 text-white shadow-[0_4px_14px_rgba(59,130,246,0.3)] transition-colors py-[14px] rounded-[14px] text-[14px] font-semibold"
+            className="w-full bg-brand-500 hover:bg-brand-400 text-white shadow-[0_4px_14px_rgba(52,103,57,0.3)] transition-colors py-[14px] rounded-[14px] text-[14px] font-semibold"
             onClick={() => setIsLayoutModalOpen(false)}
           >
             Confirm Settings

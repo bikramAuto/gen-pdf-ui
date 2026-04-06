@@ -128,11 +128,11 @@ export default function Toolbar({
       {/* TOP ROW (Mobile) / Branding + Nav + Account (Desktop) */}
       <div className="flex items-center justify-between md:contents order-first pb-1 md:pb-0">
         <div 
-          className="md:hidden flex items-center text-blue-600 dark:text-blue-400 mr-2 cursor-pointer hover:opacity-80 transition-opacity"
+          className="md:hidden flex items-center text-brand-600 dark:text-brand-400 mr-2 cursor-pointer hover:opacity-80 transition-opacity"
           onClick={onGoToHome}
         >
           <img 
-            src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+            src={theme === 'dark' ? "/bikdocs logo white.svg" : "/bikdocs logo dark.svg"} 
             alt="BikDocs" 
             className="w-8 h-8 object-contain" 
           />
@@ -146,7 +146,7 @@ export default function Toolbar({
               <input
                 ref={nameInputRef}
                 type="text"
-                className="text-sm font-semibold bg-gray-100 dark:bg-white/5 border-none outline-none rounded px-1.5 py-0.5 text-gray-800 dark:text-white w-full max-w-[200px] ring-1 ring-blue-500/50"
+                className="text-sm font-semibold bg-gray-100 dark:bg-white/5 border-none outline-none rounded px-1.5 py-0.5 text-gray-800 dark:text-white w-full max-w-[200px] ring-1 ring-brand-500/50"
                 value={tempName}
                 onChange={(e) => setTempName(e.target.value)}
                 onBlur={() => {
@@ -184,11 +184,11 @@ export default function Toolbar({
           {/* Mobile Tabs */}
           <div className="flex md:hidden bg-gray-100 dark:bg-white/5 p-0.5 rounded-md mt-1 shrink-0">
             <button
-              className={`px-3 py-0.5 text-[10px] font-semibold rounded border-none cursor-pointer transition-all ${activeTab === 'editor' ? 'bg-white dark:bg-[#2d3139] text-blue-600 dark:text-blue-400 shadow-sm' : 'bg-transparent text-gray-500 dark:text-gray-400'}`}
+              className={`px-3 py-0.5 text-[10px] font-semibold rounded border-none cursor-pointer transition-all ${activeTab === 'editor' ? 'bg-white dark:bg-[#2d3139] text-brand-600 dark:text-brand-400 shadow-sm' : 'bg-transparent text-gray-500 dark:text-gray-400'}`}
               onClick={() => onTabChange('editor')}
             >Edit</button>
             <button
-              className={`px-3 py-0.5 text-[10px] font-semibold rounded border-none cursor-pointer transition-all ${activeTab === 'preview' ? 'bg-white dark:bg-[#2d3139] text-blue-600 dark:text-blue-400 shadow-sm' : 'bg-transparent text-gray-500 dark:text-gray-400'}`}
+              className={`px-3 py-0.5 text-[10px] font-semibold rounded border-none cursor-pointer transition-all ${activeTab === 'preview' ? 'bg-white dark:bg-[#2d3139] text-brand-600 dark:text-brand-400 shadow-sm' : 'bg-transparent text-gray-500 dark:text-gray-400'}`}
               onClick={() => onTabChange('preview')}
             >Preview</button>
           </div>
@@ -199,9 +199,8 @@ export default function Toolbar({
           <div className="relative flex items-center" ref={hubRef}>
             <button
               className={`h-8 md:h-9 px-3 md:px-5 flex items-center gap-2 rounded-lg shadow-sm border-none cursor-pointer font-bold text-[11px] md:text-[13px] transition-all
-                ${documentId
                   ? 'bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-700 text-white'
-                  : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 text-white'}
+                  : 'bg-brand-600 dark:bg-brand-500 hover:bg-brand-700 text-white'}
                 ${isSaving ? 'animate-pulse pointer-events-none' : ''}
                 ${!user ? 'opacity-40' : ''}`}
               onClick={() => setHubOpen(prev => !prev)}
@@ -238,7 +237,7 @@ export default function Toolbar({
                   className="flex items-center gap-3 w-full px-3 py-2 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
                   onClick={() => { onDownload(); setHubOpen(false) }}
                 >
-                  <div className="flex items-center justify-center w-9 h-9 rounded-md bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-md bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 group-hover:scale-110 transition-transform">
                     <IconFileText />
                   </div>
                   <div className="flex flex-col">
@@ -250,7 +249,7 @@ export default function Toolbar({
                   className="flex items-center gap-3 w-full px-3 py-2 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
                   onClick={() => { onDownloadPDF(); setHubOpen(false) }}
                 >
-                  <div className="flex items-center justify-center w-9 h-9 rounded-md bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-md bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 group-hover:scale-110 transition-transform">
                     <IconPDF />
                   </div>
                   <div className="flex flex-col">
@@ -270,7 +269,7 @@ export default function Toolbar({
                   className="flex items-center gap-3 w-full px-3 py-2 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
                   onClick={() => { templateId ? onSaveTemplate() : onSaveTemplateAs(); setHubOpen(false) }}
                 >
-                  <div className="flex items-center justify-center w-9 h-9 rounded-md bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-md bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 group-hover:scale-110 transition-transform">
                     {templateId ? <IconCloud /> : <IconCopy />}
                   </div>
                   <div className="flex flex-col">
@@ -314,7 +313,7 @@ export default function Toolbar({
 
           <div className="relative" ref={profileMenuRef}>
             <button
-              className="flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full cursor-pointer transition-all hover:ring-2 hover:ring-blue-500/40 active:scale-95 bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-sm border-none overflow-hidden"
+              className="flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full cursor-pointer transition-all hover:ring-2 hover:ring-brand-500/40 active:scale-[0.95] bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-sm border-none overflow-hidden"
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}
               title={user ? `Logged in as ${user.name}` : "Profile & Settings"}
             >
@@ -377,7 +376,7 @@ export default function Toolbar({
                         className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-[12px] cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group"
                         onClick={() => { setProfileMenuOpen(false); onOpenAuth('signup'); }}
                       >
-                        <div className="flex items-center justify-center w-9 h-9 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        <div className="flex items-center justify-center w-9 h-9 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
                           <IconSignUp />
                         </div>
                         <div className="flex flex-col">
@@ -392,7 +391,7 @@ export default function Toolbar({
                         className="flex items-center gap-3 w-full px-3 py-2.5 border-none bg-transparent rounded-[12px] cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group"
                         onClick={() => { setProfileMenuOpen(false); onOpenTemplates(); }}
                       >
-                        <div className="flex items-center justify-center w-9 h-9 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        <div className="flex items-center justify-center w-9 h-9 rounded-md bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
                           <IconCloud />
                         </div>
                         <div className="flex flex-col">
@@ -441,18 +440,18 @@ export default function Toolbar({
       <div className="relative flex items-center shrink min-w-0 order-last md:order-first border-t border-gray-100 dark:border-gray-800 md:border-none pt-1 md:pt-0">
         <div className="flex items-center gap-0.5 md:gap-1.5 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <div 
-            className="hidden md:flex items-center text-blue-600 dark:text-blue-400 mr-2 md:mr-3 cursor-pointer hover:opacity-80 transition-opacity"
+            className="hidden md:flex items-center text-brand-600 dark:text-brand-400 mr-2 md:mr-3 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={onGoToHome}
           >
             <img 
-              src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+              src={theme === 'dark' ? "/bikdocs logo white.svg" : "/bikdocs logo dark.svg"} 
               alt="BikDocs" 
-              className="w-7 h-7 md:w-8 md:h-8 object-contain" 
+              className="w-8 h-8 object-contain" 
             />
           </div>
 
           <button
-            className={`${btnBase} hidden md:flex ${isEditorCollapsed ? '!text-blue-600 dark:!text-blue-400 !bg-blue-50 dark:!bg-blue-500/10' : ''}`}
+            className={`${btnBase} hidden md:flex ${isEditorCollapsed ? '!text-brand-600 dark:!text-brand-400 !bg-brand-50 dark:!bg-brand-500/10' : ''}`}
             onClick={onToggleEditor}
           >
             <IconSidebar collapsed={isEditorCollapsed} />
@@ -491,7 +490,7 @@ export default function Toolbar({
           <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
 
           <button
-            className={`${btnBase} ${showPDFTimestamp ? '!text-blue-600 dark:!text-blue-400 !bg-blue-50 dark:!bg-blue-500/10 shadow-inner' : ''}`}
+            className={`${btnBase} ${showPDFTimestamp ? '!text-brand-600 dark:!text-brand-400 !bg-brand-50 dark:!bg-brand-500/10 shadow-inner' : ''}`}
             onClick={onTogglePDFTimestamp}
             title="Toggle PDF Timestamp"
           >
@@ -500,7 +499,7 @@ export default function Toolbar({
           </button>
 
           <button
-            className={`${btnBase} ${showPageNumbers ? '!text-blue-600 dark:!text-blue-400 !bg-blue-50 dark:!bg-blue-500/10 shadow-inner' : ''}`}
+            className={`${btnBase} ${showPageNumbers ? '!text-brand-600 dark:!text-brand-400 !bg-brand-50 dark:!bg-brand-500/10 shadow-inner' : ''}`}
             onClick={onTogglePageNumbers}
             title="Toggle PDF Page Numbers"
           >
@@ -520,7 +519,7 @@ export default function Toolbar({
             {/* Format Icon */}
             <div className="relative" ref={formatRef}>
               <button
-                className={`${btnBase} ${formatOpen ? '!text-blue-600 dark:!text-blue-400 !bg-blue-50 dark:!bg-blue-500/10' : ''}`}
+                className={`${btnBase} ${formatOpen ? '!text-brand-600 dark:!text-brand-400 !bg-brand-50 dark:!bg-brand-500/10' : ''}`}
                 onClick={() => { setFormatOpen(!formatOpen); setOrientOpen(false); setMarginOpen(false); }}
                 title="Page Size"
               >
@@ -531,7 +530,7 @@ export default function Toolbar({
                   {['a4', 'letter', 'legal'].map(s => (
                     <button
                       key={s}
-                      className={`w-full text-left px-3 py-2 text-[10px] font-bold uppercase rounded-lg transition-colors ${pdfConfig.format === s ? 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/10' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                      className={`w-full text-left px-3 py-2 text-[10px] font-bold uppercase rounded-lg transition-colors ${pdfConfig.format === s ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'}`}
                       onClick={() => { onUpdatePDFConfig({ format: s as any }); setFormatOpen(false); }}
                     >
                       {s}
@@ -544,7 +543,7 @@ export default function Toolbar({
             {/* Orientation Icon */}
             <div className="relative" ref={orientRef}>
               <button
-                className={`${btnBase} ${orientOpen ? '!text-blue-600 dark:!text-blue-400 !bg-blue-50 dark:!bg-blue-500/10' : ''}`}
+                className={`${btnBase} ${orientOpen ? '!text-brand-600 dark:!text-brand-400 !bg-brand-50 dark:!bg-brand-500/10' : ''}`}
                 onClick={() => { setOrientOpen(!orientOpen); setFormatOpen(false); setMarginOpen(false); }}
                 title="Page Orientation"
               >
@@ -555,7 +554,7 @@ export default function Toolbar({
                   {['portrait', 'landscape'].map(o => (
                     <button
                       key={o}
-                      className={`w-full text-left px-3 py-2 text-[10px] font-bold uppercase rounded-lg transition-colors ${pdfConfig.orientation === o ? 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/10' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                      className={`w-full text-left px-3 py-2 text-[10px] font-bold uppercase rounded-lg transition-colors ${pdfConfig.orientation === o ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'}`}
                       onClick={() => { onUpdatePDFConfig({ orientation: o as any }); setOrientOpen(false); }}
                     >
                       {o}
@@ -568,7 +567,7 @@ export default function Toolbar({
             {/* Margin Icon */}
             <div className="relative" ref={marginRef}>
               <button
-                className={`${btnBase} ${marginOpen ? '!text-blue-600 dark:!text-blue-400 !bg-blue-50 dark:!bg-blue-500/10' : ''}`}
+                className={`${btnBase} ${marginOpen ? '!text-brand-600 dark:!text-brand-400 !bg-brand-50 dark:!bg-brand-500/10' : ''}`}
                 onClick={() => { setMarginOpen(!marginOpen); setFormatOpen(false); setOrientOpen(false); }}
                 title="Page Margin"
               >
@@ -579,7 +578,7 @@ export default function Toolbar({
                   {[0.2, 0.5, 0.8, 1.0].map(m => (
                     <button
                       key={m}
-                      className={`w-full text-left px-3 py-2 text-[10px] font-bold uppercase rounded-lg transition-colors ${pdfConfig.margin === m ? 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/10' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                      className={`w-full text-left px-3 py-2 text-[10px] font-bold uppercase rounded-lg transition-colors ${pdfConfig.margin === m ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'}`}
                       onClick={() => { onUpdatePDFConfig({ margin: m }); setMarginOpen(false); }}
                     >
                       {m.toFixed(1)} in

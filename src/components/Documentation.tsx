@@ -37,7 +37,7 @@ const DOCS: DocSection[] = [
         <p className="text-zinc-600 dark:text-zinc-400">
           The core of BikDocs is our real-time rendering engine. As you type in the editor, the preview pane updates instantly, rendering your Markdown into a format that honors physical page dimensions.
         </p>
-        <div className="bg-zinc-900 rounded-xl p-6 font-mono text-sm text-indigo-300">
+        <div className="bg-zinc-900 rounded-xl p-6 font-mono text-sm text-brand-300">
           <div className="opacity-50 mb-2">// Sample Markdown</div>
           <div className="text-white"># My Professional Report</div>
           <div className="mt-2 text-zinc-400">This updates instantly in the preview...</div>
@@ -60,7 +60,7 @@ const DOCS: DocSection[] = [
         </p>
         <div className="flex gap-4">
           {['A4', 'Letter', 'Legal'].map(size => (
-            <div key={size} className="px-4 py-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-bold text-xs border border-indigo-100 dark:border-indigo-800">
+            <div key={size} className="px-4 py-2 rounded-lg bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400 font-bold text-xs border border-brand-100 dark:border-brand-800">
               {size} Format
             </div>
           ))}
@@ -110,7 +110,7 @@ const DOCS: DocSection[] = [
              </div>
           </div>
           <div className="flex items-center gap-3 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50">
-             <svg className="w-8 h-8 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" /></svg>
+             <svg className="w-8 h-8 text-brand-500" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" /></svg>
              <div>
                 <div className="font-bold text-sm">Raster Images</div>
                 <div className="text-[10px] text-zinc-500">Export pages as high-res PNG/JPG</div>
@@ -136,12 +136,12 @@ const DOCS: DocSection[] = [
             </div>
             <p className="text-xs text-emerald-600/80 dark:text-emerald-400/70 leading-relaxed">Every API request includes a DPoP (Demonstrating Proof-of-Possession) token signed with your device&apos;s ECDSA P-256 key pair, preventing token theft and replay attacks.</p>
           </div>
-          <div className="p-5 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
+          <div className="p-5 rounded-2xl bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800">
             <div className="flex items-center gap-2 mb-3">
-              <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
-              <h4 className="font-bold text-sm text-blue-700 dark:text-blue-300">ECDSA Key Pair</h4>
+              <svg className="w-5 h-5 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+              <h4 className="font-bold text-sm text-brand-700 dark:text-brand-300">ECDSA Key Pair</h4>
             </div>
-            <p className="text-xs text-blue-600/80 dark:text-blue-400/70 leading-relaxed">A unique ECDSA P-256 key pair is generated in-browser using the Web Crypto API. Private keys never leave your device — only the public key is shared with the server.</p>
+            <p className="text-xs text-brand-600/80 dark:text-brand-400/70 leading-relaxed">A unique ECDSA P-256 key pair is generated in-browser using the Web Crypto API. Private keys never leave your device — only the public key is shared with the server.</p>
           </div>
           <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800">
             <div className="flex items-center gap-2 mb-3">
@@ -150,12 +150,12 @@ const DOCS: DocSection[] = [
             </div>
             <p className="text-xs text-amber-600/80 dark:text-amber-400/70 leading-relaxed">Expired access tokens are automatically refreshed in the background using DPoP-protected refresh tokens. You&apos;ll never be interrupted by a login prompt mid-session.</p>
           </div>
-          <div className="p-5 rounded-2xl bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800">
+          <div className="p-5 rounded-2xl bg-brand-50 dark:bg-brand-900/20 border border-brand-100 dark:border-brand-800">
             <div className="flex items-center gap-2 mb-3">
-              <svg className="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-              <h4 className="font-bold text-sm text-purple-700 dark:text-purple-300">Content Sanitization</h4>
+              <svg className="w-5 h-5 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+              <h4 className="font-bold text-sm text-brand-700 dark:text-brand-300">Content Sanitization</h4>
             </div>
-            <p className="text-xs text-purple-600/80 dark:text-purple-400/70 leading-relaxed">All rendered Markdown is sanitized through DOMPurify before display, blocking XSS attacks from malicious content while preserving safe HTML elements.</p>
+            <p className="text-xs text-brand-600/80 dark:text-brand-400/70 leading-relaxed">All rendered Markdown is sanitized through DOMPurify before display, blocking XSS attacks from malicious content while preserving safe HTML elements.</p>
           </div>
         </div>
         <div className="p-6 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/30 dark:bg-transparent">
@@ -181,17 +181,17 @@ const DOCS: DocSection[] = [
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700 text-center">
-            <svg className="w-8 h-8 mx-auto mb-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+            <svg className="w-8 h-8 mx-auto mb-3 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
             <h4 className="font-bold text-sm mb-1">Templates</h4>
             <p className="text-[11px] text-zinc-500 leading-relaxed">Save layout settings — page format, margins, headers, and footers — as reusable templates across documents.</p>
           </div>
           <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700 text-center">
-            <svg className="w-8 h-8 mx-auto mb-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+            <svg className="w-8 h-8 mx-auto mb-3 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
             <h4 className="font-bold text-sm mb-1">Sync</h4>
             <p className="text-[11px] text-zinc-500 leading-relaxed">Push your current document to the cloud with one click. Changes are synced to the same server-side copy.</p>
           </div>
           <div className="p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700 text-center">
-            <svg className="w-8 h-8 mx-auto mb-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <svg className="w-8 h-8 mx-auto mb-3 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             <h4 className="font-bold text-sm mb-1">Snapshots</h4>
             <p className="text-[11px] text-zinc-500 leading-relaxed">Create point-in-time snapshots of your document for versioning, without overwriting the original.</p>
           </div>
@@ -233,8 +233,8 @@ const DOCS: DocSection[] = [
               ].map(([action, mac, win], i) => (
                 <tr key={action} className={i % 2 !== 0 ? 'bg-zinc-50 dark:bg-zinc-800/30' : ''}>
                   <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 font-medium">{action}</td>
-                  <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 font-mono text-xs text-indigo-600 dark:text-indigo-400">{mac}</td>
-                  <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 font-mono text-xs text-indigo-600 dark:text-indigo-400">{win}</td>
+                  <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 font-mono text-xs text-brand-600 dark:text-brand-400">{mac}</td>
+                  <td className="border border-zinc-200 dark:border-zinc-700 px-4 py-2 font-mono text-xs text-brand-600 dark:text-brand-400">{win}</td>
                 </tr>
               ))}
             </tbody>
@@ -251,8 +251,8 @@ const DOCS: DocSection[] = [
         <p className="text-zinc-600 dark:text-zinc-400">
           BikDocs includes a dedicated touch-friendly toolbar for mobile users. Since phones lack physical keyboards for shortcuts like <code className="bg-zinc-100 dark:bg-zinc-800 px-1 rounded text-xs">Ctrl+A</code> or <code className="bg-zinc-100 dark:bg-zinc-800 px-1 rounded text-xs">Ctrl+B</code>, the mobile editing bar provides one-tap access to all essential actions.
         </p>
-        <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800/50">
-          <h4 className="font-bold text-sm text-blue-700 dark:text-blue-300 mb-3">Mobile Toolbar Actions</h4>
+        <div className="p-5 rounded-2xl bg-gradient-to-r from-brand-50 to-brand-100 dark:from-brand-900/20 dark:to-brand-800/20 border border-brand-100 dark:border-brand-800/50">
+          <h4 className="font-bold text-sm text-brand-700 dark:text-brand-300 mb-3">Mobile Toolbar Actions</h4>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {[
               { icon: '☰', label: 'Select All', desc: 'Select entire document' },
@@ -268,7 +268,7 @@ const DOCS: DocSection[] = [
               { icon: '❝', label: 'Blockquote', desc: 'Insert > at line start' },
             ].map(item => (
               <div key={item.label} className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/60 dark:bg-zinc-900/40">
-                <span className="w-7 h-7 rounded-md bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs font-extrabold shrink-0">{item.icon}</span>
+                <span className="w-7 h-7 rounded-md bg-brand-100 dark:bg-brand-500/20 text-brand-600 dark:text-brand-400 flex items-center justify-center text-xs font-extrabold shrink-0">{item.icon}</span>
                 <div className="min-w-0">
                   <div className="text-xs font-bold truncate">{item.label}</div>
                   <div className="text-[10px] text-zinc-400 truncate">{item.desc}</div>
@@ -349,7 +349,7 @@ export default function Documentation({ onBack, onGoToEditor, onGoToGuide, theme
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={onBack}>
             <img 
-              src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+              src={theme === 'dark' ? "/bikdocs logo white.svg" : "/bikdocs logo dark.svg"} 
               alt="BikDocs" 
               className="h-10 w-auto" 
             />
@@ -389,7 +389,7 @@ export default function Documentation({ onBack, onGoToEditor, onGoToGuide, theme
             </button>
             <button 
               onClick={onGoToEditor}
-              className="flex items-center gap-2 px-3 py-2 md:px-5 md:py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-lg shadow-indigo-500/25 transition-all active:scale-95"
+              className="flex items-center gap-2 px-3 py-2 md:px-5 md:py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-lg shadow-brand-500/25 transition-all active:scale-95"
               title="Start Writing"
             >
               <svg className="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -412,7 +412,7 @@ export default function Documentation({ onBack, onGoToEditor, onGoToGuide, theme
                   onClick={() => handleScrollTo(doc.id)}
                   className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 ease-out ${
                     activeSection === doc.id 
-                    ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 shadow-sm' 
+                    ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 border border-brand-100 dark:border-brand-800 shadow-sm' 
                     : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 border border-transparent'
                   }`}
                 >
@@ -431,7 +431,7 @@ export default function Documentation({ onBack, onGoToEditor, onGoToGuide, theme
               {DOCS.map((doc) => (
                 <section key={doc.id} id={doc.id} className="scroll-mt-32">
                   <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
-                    <span className="w-1.5 h-8 bg-indigo-500 rounded-full" />
+                    <span className="w-1.5 h-8 bg-brand-500 rounded-full" />
                     {doc.title}
                   </h2>
                   <div className="prose dark:prose-invert">
@@ -441,12 +441,12 @@ export default function Documentation({ onBack, onGoToEditor, onGoToGuide, theme
               ))}
             </div>
 
-            <div className="mt-40 p-12 rounded-[32px] bg-indigo-600 text-white text-center shadow-2xl shadow-indigo-500/20">
+            <div className="mt-40 p-12 rounded-[32px] bg-brand-600 text-white text-center shadow-2xl shadow-brand-500/20">
                <h3 className="text-3xl font-bold mb-6">Ready to create?</h3>
-               <p className="text-indigo-100 mb-8 max-w-xs mx-auto">Start your first document today and see the precision for yourself.</p>
+               <p className="text-brand-100 mb-8 max-w-xs mx-auto">Start your first document today and see the precision for yourself.</p>
                <button 
                 onClick={onGoToEditor}
-                className="px-10 py-4 rounded-full bg-white text-indigo-600 font-bold shadow-xl hover:bg-indigo-50 transition-all active:scale-95"
+                className="px-10 py-4 rounded-full bg-white text-brand-600 font-bold shadow-xl hover:bg-brand-50 transition-all active:scale-95"
                >
                 Open Editor
                </button>
@@ -462,7 +462,7 @@ export default function Documentation({ onBack, onGoToEditor, onGoToGuide, theme
               onClick={onBack}
             >
                <img 
-                 src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+                 src={theme === 'dark' ? "/bikdocs logo white.svg" : "/bikdocs logo dark.svg"} 
                  alt="BikDocs" 
                  className="h-8 w-auto" 
                />

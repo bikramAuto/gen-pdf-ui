@@ -102,7 +102,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
         return (
           <div className="space-y-6 text-center">
             <img 
-              src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+              src={theme === 'dark' ? "/bikdocs logo white.svg" : "/bikdocs logo dark.svg"} 
               alt="BikDocs" 
               className="w-20 h-20 mx-auto mb-6 object-contain" 
             />
@@ -119,7 +119,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0b0d12] text-zinc-900 dark:text-zinc-100 font-[Inter,system-ui,sans-serif] selection:bg-indigo-100 dark:selection:bg-indigo-900/30">
+    <div className="min-h-screen bg-white dark:bg-[#0b0d12] text-zinc-900 dark:text-zinc-100 font-[Inter,system-ui,sans-serif] selection:bg-brand-100 dark:selection:bg-brand-900/30">
       {/* Background Texture */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         {/* Main Grid */}
@@ -132,8 +132,8 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
         />
 
         {/* Refined Central Glows */}
-        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-indigo-500/[0.08] dark:bg-indigo-500/[0.15] rounded-full blur-[120px]" />
-        <div className="absolute top-[5%] left-[45%] w-[400px] h-[400px] bg-purple-500/[0.05] dark:bg-purple-500/[0.1] rounded-full blur-[100px]" />
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-brand-500/[0.08] dark:bg-brand-500/[0.15] rounded-full blur-[120px]" />
+        <div className="absolute top-[5%] left-[45%] w-[400px] h-[400px] bg-brand-300/[0.05] dark:bg-brand-300/[0.1] rounded-full blur-[100px]" />
 
         {/* Bottom fade for the grid */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-white dark:via-transparent dark:to-[#0b0d12]" />
@@ -144,7 +144,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img 
-              src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+              src={theme === 'dark' ? "/bikdocs logo white.svg" : "/bikdocs logo dark.svg"} 
               alt="BikDocs" 
               className="h-10 w-auto" 
             />
@@ -190,7 +190,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
             </button>
             <button
               onClick={onGoToEditor}
-              className="px-5 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-lg shadow-indigo-500/25 transition-all active:scale-95"
+              className="px-5 py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-lg shadow-brand-500/25 transition-all active:scale-95"
             >
               Start Writing
             </button>
@@ -201,13 +201,13 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
       <main className="relative z-10 pt-32">
         {/* Hero */}
         <section className="max-w-5xl mx-auto px-6 text-center mb-24">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800 text-indigo-600 dark:text-indigo-300 text-[11px] font-bold uppercase tracking-wider mb-8 animate-fade-in">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-900/30 border border-brand-100 dark:border-brand-800 text-brand-600 dark:text-brand-300 text-[11px] font-bold uppercase tracking-wider mb-8 animate-fade-in">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse" />
             Beta Release 2.0
           </div>
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.05] mb-8 text-zinc-900 dark:text-white">
             Precision Markdown, <br />
-            <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 bg-clip-text text-transparent animate-gradient-x">
+            <span className="bg-gradient-to-r from-brand-600 via-brand-400 to-brand-600 bg-clip-text text-transparent animate-gradient-x">
               Physical Results.
             </span>
           </h1>
@@ -217,7 +217,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={onGoToEditor}
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-xl shadow-indigo-500/20 transition-all hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center gap-2 group"
+              className="w-full sm:w-auto px-8 py-4 rounded-full bg-brand-600 hover:bg-brand-700 text-white font-bold text-lg shadow-xl shadow-brand-500/20 transition-all hover:-translate-y-1 active:scale-[0.98] flex items-center justify-center gap-2 group"
             >
               Start Writing Now
               <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
@@ -234,7 +234,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
 
         {/* Mockup */}
         <section className="max-w-6xl mx-auto px-6 mb-32 relative">
-          <div className="absolute inset-0 bg-indigo-500/10 blur-[120px] rounded-full -z-10" />
+          <div className="absolute inset-0 bg-brand-500/10 blur-[120px] rounded-full -z-10" />
           <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-2xl overflow-hidden backdrop-blur-sm group">
             {/* Browser Header */}
             <div className="h-12 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80 flex items-center px-6 gap-2">
@@ -249,7 +249,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
             </div>
             {/* Editor Content Mockup */}
             <div className="grid grid-cols-1 md:grid-cols-2 h-[400px] md:h-[600px]">
-              <div className="hidden md:block border-r border-zinc-200 dark:border-zinc-800 p-8 font-mono text-sm text-indigo-600 dark:text-indigo-400">
+              <div className="hidden md:block border-r border-zinc-200 dark:border-zinc-800 p-8 font-mono text-sm text-brand-600 dark:text-brand-400">
                 <div className="opacity-50 space-y-2">
                   <div># Project Proposal</div>
                   <div className="text-zinc-400 dark:text-zinc-600 mt-4">## Executive Summary</div>
@@ -275,13 +275,13 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
         {/* Features Grid */}
         <section className="max-w-7xl mx-auto px-6 mb-40">
           <div className="text-center mb-16">
-            <h2 className="text-sm font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-4">Core Benefits</h2>
+            <h2 className="text-sm font-bold text-brand-600 dark:text-brand-400 uppercase tracking-widest mb-4">Core Benefits</h2>
             <h3 className="text-3xl md:text-4xl font-extrabold text-zinc-900 dark:text-white">Engineered for Document Perfection</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {FEATURES.map((f, i) => (
               <div key={i} className="group p-8 rounded-3xl border border-zinc-100 dark:border-zinc-800/50 bg-white dark:bg-zinc-900/30 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-all hover:-translate-y-2">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   {f.icon}
                 </div>
                 <h4 className="font-bold text-lg mb-4 text-zinc-900 dark:text-white">{f.title}</h4>
@@ -311,14 +311,14 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
                 'Consistent typography across all devices'
               ].map((item, i) => (
                 <li key={i} className="flex items-center gap-3 text-zinc-600 dark:text-zinc-300 font-medium">
-                  <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  <svg className="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                   {item}
                 </li>
               ))}
             </ul>
           </div>
           <div className="flex-1 w-full scale-110 md:scale-100">
-            <div className="relative aspect-square bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-full flex items-center justify-center">
+            <div className="relative aspect-square bg-gradient-to-br from-brand-500/10 to-brand-300/10 rounded-full flex items-center justify-center">
               <div className="absolute inset-0 bg-white/20 dark:bg-transparent backdrop-blur-3xl rounded-full border border-white dark:border-zinc-800" />
               <div className="relative w-2/3 h-3/4 bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 transform rotate-3 p-8 flex flex-col">
                 <div className="w-full h-1 bg-zinc-100 dark:bg-zinc-800 mb-2" />
@@ -360,7 +360,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
                   key={type.id}
                   onClick={() => setActiveDocType(type)}
                   className={`flex-1 text-left px-6 py-4 rounded-2xl text-sm font-bold transition-all whitespace-nowrap ${activeDocType.id === type.id
-                      ? 'bg-white dark:bg-zinc-800 shadow-xl shadow-zinc-200/50 dark:shadow-none border border-zinc-200 dark:border-zinc-700 text-indigo-600 dark:text-white'
+                      ? 'bg-white dark:bg-zinc-800 shadow-xl shadow-zinc-200/50 dark:shadow-none border border-zinc-200 dark:border-zinc-700 text-brand-600 dark:text-white'
                       : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
                     }`}
                 >
@@ -379,7 +379,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
                   <div className="w-2.5 h-2.5 rounded-full bg-zinc-200 dark:bg-zinc-800" />
                 </div>
                 <div className="space-y-2 opacity-80">
-                  <div className="text-indigo-500">export default function</div>
+                  <div className="text-brand-500">export default function</div>
                   <div className="pl-4 text-zinc-400">return document.create(&apos;{activeDocType.id}&apos;);</div>
                 </div>
               </div>
@@ -388,31 +388,6 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
         </section>
 
 
-        {/* CTA Banner */}
-        <section className="max-w-7xl mx-auto px-6 mb-24">
-          <div className="rounded-[40px] bg-indigo-600 p-12 md:p-24 text-center text-white relative overflow-hidden shadow-2xl shadow-indigo-500/20 group">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_white_0.1,_transparent_0)] bg-[size:40px_40px] opacity-10" />
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-400/20 to-transparent" />
-
-            <h3 className="text-4xl md:text-6xl font-black mb-8 relative z-10 leading-tight">
-              Ready to upgrade your <br className="hidden md:block" /> document workflow?
-            </h3>
-            <p className="text-indigo-100 text-lg md:text-xl max-w-2xl mx-auto mb-12 relative z-10 opacity-90">
-              Join thousands of writers who have already made the switch to the physical Markdown experience.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
-              <button
-                onClick={onGoToEditor}
-                className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-white text-indigo-600 font-bold text-lg shadow-xl hover:bg-indigo-50 transition-all hover:-translate-y-1 active:scale-95"
-              >
-                Start Writing for Free
-              </button>
-              <button className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-indigo-500 text-white font-bold text-lg hover:bg-indigo-400 transition-all border border-indigo-400">
-                Contact Sales
-              </button>
-            </div>
-          </div>
-        </section>
       </main>
 
       <footer className="border-t border-zinc-100 dark:border-zinc-800 py-20 relative z-10 bg-white dark:bg-[#0b0d12]">
@@ -424,7 +399,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               >
                 <img 
-                  src="/0D983891-04BA-4617-BD54-EEAAA96B184A-Photoroom.png" 
+                  src={theme === 'dark' ? "/bikdocs logo white.svg" : "/bikdocs logo dark.svg"} 
                   alt="BikDocs" 
                   className="h-10 w-auto" 
                 />
@@ -503,7 +478,7 @@ export default function Home({ onGoToEditor, onGoToDocs, onGoToGuide, theme, onT
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-10 border-t border-zinc-100 dark:border-zinc-800">
             <p className="text-sm text-zinc-400">&copy; 2026 BikDocs. All rights reserved.</p>
             <div className="flex items-center gap-6">
-              <a href="#" className="text-zinc-400 hover:text-indigo-600 transition-colors">
+              <a href="#" className="text-zinc-400 hover:text-brand-600 transition-colors">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" /></svg>
               </a>
               <a href="#" className="text-zinc-400 hover:text-indigo-600 transition-colors">

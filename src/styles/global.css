@@ -6,6 +6,20 @@
   --animate-gradient-x: gradient-x 15s ease infinite;
   --animate-float: float 6s ease-in-out infinite;
 
+  /* Nature Theme Palette */
+  --color-brand-50: #f4f8f4;
+  --color-brand-100: #e7f1e7;
+  --color-brand-200: #cfdfcf;
+  --color-brand-300: #9fcb98; /* Light Green */
+  --color-brand-400: #79ae6f; /* Medium Green */
+  --color-brand-500: #57934a; 
+  --color-brand-600: #346739; /* Dark Green */
+  --color-brand-700: #2a522e;
+  --color-brand-800: #1c351e;
+  --color-brand-900: #142816;
+  
+  --color-accent-cream: #f2edc2; /* Cream */
+
   @keyframes fade-in {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -19,6 +33,7 @@
     50% { transform: translateY(-10px); }
   }
 }
+
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -176,11 +191,11 @@ div.prose tr:nth-child(even) {
 }
 
 .prose [data-footnote-ref] {
-  @apply text-blue-600 dark:text-blue-400 no-underline hover:underline ml-0.5;
+  @apply text-brand-600 dark:text-brand-400 no-underline hover:underline ml-0.5;
 }
 
 .prose [data-footnote-backref] {
-  @apply text-blue-600 dark:text-blue-400 no-underline hover:underline ml-1;
+  @apply text-brand-600 dark:text-brand-400 no-underline hover:underline ml-1;
 }
 
 /* Task Lists */
@@ -189,7 +204,7 @@ div.prose tr:nth-child(even) {
 }
 
 .prose input[type="checkbox"] {
-  @apply w-4 h-4 rounded border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 text-blue-600 focus:ring-blue-500 cursor-default;
+  @apply w-4 h-4 rounded border-gray-300 dark:border-gray-700 bg-white dark:bg-zinc-900 text-brand-600 focus:ring-brand-500 cursor-default;
 }
 
 /* Print line-height consistency (#10) */
