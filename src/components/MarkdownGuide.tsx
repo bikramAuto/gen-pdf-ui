@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
+import Navbar from './ui/Navbar'
 import '../styles/global.css'
 
 /* ─── Types ─── */
@@ -531,56 +532,22 @@ export default function MarkdownGuide({
       </div>
 
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/70 dark:bg-[#0b0d12]/70 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800/50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img 
-              src={theme === 'dark' ? "/bikdocs logo white.svg" : "/bikdocs logo dark.svg"} 
-              alt="BikDocs" 
-              className="h-10 w-auto cursor-pointer" 
-              onClick={onBack}
-            />
-            <button
-              onClick={onGoToDocs}
-              className="ml-2 px-2 py-0.5 rounded-md bg-brand-50 hover:bg-brand-100 dark:bg-brand-900/30 dark:hover:bg-brand-900/50 text-[10px] text-brand-600 dark:text-brand-400 font-bold uppercase tracking-wider border border-brand-100 dark:border-brand-800 transition-all active:scale-95"
-              title="Go to Documentation"
-            >
-              Docs
-            </button>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={onToggleTheme}
-              className="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 transition-colors"
-            >
-              {theme === 'light' ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-              ) : (
-                <svg className="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-              )}
-            </button>
-
-            <button
-              onClick={onGoToEditor}
-              className="flex items-center gap-2 px-3 py-2 md:px-5 md:py-2 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-lg shadow-brand-500/25 transition-all active:scale-95"
-              title="Start Writing"
-            >
-              <svg className="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              <span className="hidden md:inline">Start Writing</span>
-            </button>
-          </div>
-        </div>
-      </nav>
+      <Navbar 
+        currentView="markdown-guide"
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+        onGoToHome={onBack}
+        onGoToEditor={onGoToEditor}
+        onGoToDocs={onGoToDocs}
+        onGoToGuide={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      />
 
       {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-20">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-40 pb-20">
         <div className="flex flex-col md:flex-row gap-12 lg:gap-16">
           {/* Sidebar */}
           <aside className="w-full md:w-56 lg:w-64 shrink-0">
-            <div className="sticky top-32 space-y-0.5 max-h-[calc(100vh-10rem)] overflow-y-auto pr-2">
+            <div className="sticky top-40 space-y-0.5 max-h-[calc(100vh-10rem)] overflow-y-auto pr-2">
               {GUIDE_SECTIONS.map((sec) => (
                 <button
                   key={sec.id}

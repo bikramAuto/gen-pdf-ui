@@ -134,7 +134,7 @@ export default function Toolbar({
           <img 
             src={theme === 'dark' ? "/bikdocs logo white.svg" : "/bikdocs logo dark.svg"} 
             alt="BikDocs" 
-            className="w-8 h-8 object-contain" 
+            className="w-10 h-10 object-contain" 
           />
         </div>
 
@@ -446,7 +446,7 @@ export default function Toolbar({
             <img 
               src={theme === 'dark' ? "/bikdocs logo white.svg" : "/bikdocs logo dark.svg"} 
               alt="BikDocs" 
-              className="w-8 h-8 object-contain" 
+              className="w-10 h-10 object-contain" 
             />
           </div>
 
