@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Block sensitive/internal routes
+Disallow: /api/
+Disallow: /auth/
+Disallow: /admin/
+Disallow: /private/
+
+# Allow important pages
+Allow: /docs/
+Allow: /templates/
+
+Sitemap: https://bikdocs.in/sitemap.xml
