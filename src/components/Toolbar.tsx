@@ -120,10 +120,10 @@ export default function Toolbar({
     return () => document.removeEventListener('mousedown', handleClick)
   }, [profileMenuOpen, formatOpen, orientOpen, marginOpen, hubOpen])
 
-  const btnBase = "flex items-center justify-center gap-1.5 h-9 px-1.5 sm:px-2.5 rounded-lg cursor-pointer border border-transparent bg-transparent text-gray-600 dark:text-gray-400 transition-all hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white active:scale-95 shrink-0"
+  const btnBase = "flex flex-col items-center justify-center gap-1 min-w-[56px] h-[52px] px-1 rounded-lg cursor-pointer border border-transparent bg-transparent text-gray-500 dark:text-gray-400 transition-all hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white active:scale-95 shrink-0"
 
   return (
-    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between h-auto md:h-14 px-1.5 md:px-5 bg-white dark:bg-[#1a1c23] border-b border-gray-200 dark:border-[#2d3139] shrink-0 relative z-50 gap-1.5 md:gap-4 py-1.5 md:py-0">
+    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between h-auto md:h-20 px-1.5 md:px-5 bg-white dark:bg-[#1a1c23] border-b border-gray-200 dark:border-[#2d3139] shrink-0 relative z-[40] gap-1.5 md:gap-4 py-2 md:py-0">
 
       {/* TOP ROW (Mobile) / Branding + Nav + Account (Desktop) */}
       <div className="flex items-center justify-between md:contents order-first pb-1 md:pb-0">
@@ -199,8 +199,9 @@ export default function Toolbar({
           <div className="relative flex items-center" ref={hubRef}>
             <button
               className={`h-8 md:h-9 px-3 md:px-5 flex items-center gap-2 rounded-lg shadow-sm border-none cursor-pointer font-bold text-[11px] md:text-[13px] transition-all
-                  ? 'bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-700 text-white'
-                  : 'bg-brand-600 dark:bg-brand-500 hover:bg-brand-700 text-white'}
+                ${documentId 
+                  ? 'bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-700 dark:hover:bg-emerald-600 active:bg-emerald-800 text-white' 
+                  : 'bg-brand-500 dark:bg-brand-600 hover:bg-brand-600 dark:hover:bg-brand-500 active:bg-brand-700 active:scale-[0.98] text-white'}
                 ${isSaving ? 'animate-pulse pointer-events-none' : ''}
                 ${!user ? 'opacity-40' : ''}`}
               onClick={() => setHubOpen(prev => !prev)}
@@ -266,7 +267,7 @@ export default function Toolbar({
                   Template Library
                 </div>
                 <button
-                  className="flex items-center gap-3 w-full px-3 py-2 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
+                  className="flex items-center gap-3 w-full px-3 py-2 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors group"
                   onClick={() => { templateId ? onSaveTemplate() : onSaveTemplateAs(); setHubOpen(false) }}
                 >
                   <div className="flex items-center justify-center w-9 h-9 rounded-md bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 group-hover:scale-110 transition-transform">
@@ -290,7 +291,7 @@ export default function Toolbar({
                   Project Content
                 </div>
                 <button
-                  className="flex items-center gap-3 w-full px-3 py-2 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-gray-100 dark:hover:bg-white/10 transition-colors group"
+                  className="flex items-center gap-3 w-full px-3 py-2 border-none bg-transparent rounded-lg cursor-pointer text-gray-800 dark:text-white text-left hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors group"
                   onClick={() => { onSaveDocument(); setHubOpen(false); }}
                 >
                   <div className="flex items-center justify-center w-9 h-9 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
@@ -461,62 +462,60 @@ export default function Toolbar({
 
           <button className={btnBase} onClick={onNew} title="New Document">
             <IconNew />
-            <span className="hidden lg:inline text-xs font-medium">New</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">New</span>
           </button>
 
-          <button className={btnBase} onClick={onOpen} title="Open Locally">
+          <button className={btnBase} onClick={onOpen} title="Open Markdown">
             <IconOpen />
-            <span className="hidden lg:inline text-xs font-medium">Open</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">Open</span>
           </button>
 
-          <button className={btnBase} onClick={onOpenLayout} title="Layout Settings">
+          <button className={btnBase} onClick={onOpenLayout} title="Document Layout Settings">
             <IconLayout />
-            <span className="hidden lg:inline text-xs font-medium">Layout</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">Layout</span>
           </button>
 
-          <div className="relative group">
-            <button className={`${btnBase} opacity-50 cursor-pointer`} aria-label="GitHub integration coming soon">
-              <IconGitHub />
-              <span className="hidden lg:inline text-xs font-medium">GitHub</span>
-            </button>
-            <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 px-3 py-1.5 bg-zinc-900 dark:bg-zinc-800 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-[1001] shadow-xl border border-white/10 translate-y-1 group-hover:translate-y-0">
-              Coming Soon
+          <div className="flex items-center border-l border-zinc-200 dark:border-zinc-800 ml-1 pl-1 gap-0.5">
+            <div className="relative group">
+              <button className={`${btnBase} opacity-50 cursor-pointer`} aria-label="GitHub integration coming soon">
+                <IconGitHub />
+                <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">GitHub</span>
+              </button>
+              <div className="absolute top-[calc(100%+8px)] left-1/2 -translate-x-1/2 px-3 py-1.5 bg-zinc-900 dark:bg-zinc-800 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-[1001] shadow-xl border border-white/10 translate-y-1 group-hover:translate-y-0">
+                Coming Soon
+              </div>
             </div>
+
+            <button className={btnBase} onClick={onInsertImage} title="Insert Image">
+              <IconImage />
+              <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">Image</span>
+            </button>
+
+            <button className={btnBase} onClick={onInsertPageBreak} title="Insert Page Break">
+              <IconPageBreak />
+              <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">Break</span>
+            </button>
           </div>
 
-          <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
+          <div className="flex items-center border-l border-zinc-200 dark:border-zinc-800 ml-1 pl-1 gap-0.5">
+            <button
+              className={`flex flex-col items-center justify-center gap-1 min-w-[64px] h-[52px] px-2 rounded-lg cursor-pointer border border-transparent transition-all active:scale-[0.98] shrink-0 ${showPDFTimestamp ? '!text-brand-600 dark:!text-brand-400 !bg-brand-50 dark:!bg-brand-500/10 shadow-inner' : 'bg-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'}`}
+              onClick={onTogglePDFTimestamp}
+              title="Toggle Timestamp"
+            >
+              <IconClock />
+              <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">Time</span>
+            </button>
 
-
-          <button className={btnBase} onClick={onInsertImage} title="Insert Image">
-            <IconImage />
-            <span className="hidden lg:inline text-xs font-medium">Image</span>
-          </button>
-
-          <button className={btnBase} onClick={onInsertPageBreak} title="Insert Page Break">
-            <IconPageBreak />
-            <span className="hidden lg:inline text-xs font-medium">Break</span>
-          </button>
-
-          <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-0.5" />
-
-          <button
-            className={`${btnBase} ${showPDFTimestamp ? '!text-brand-600 dark:!text-brand-400 !bg-brand-50 dark:!bg-brand-500/10 shadow-inner' : ''}`}
-            onClick={onTogglePDFTimestamp}
-            title="Toggle PDF Timestamp"
-          >
-            <IconClock />
-            <span className="hidden lg:inline text-xs font-medium">Timestamp</span>
-          </button>
-
-          <button
-            className={`${btnBase} ${showPageNumbers ? '!text-brand-600 dark:!text-brand-400 !bg-brand-50 dark:!bg-brand-500/10 shadow-inner' : ''}`}
-            onClick={onTogglePageNumbers}
-            title="Toggle PDF Page Numbers"
-          >
-            <IconHash />
-            <span className="hidden lg:inline text-xs font-medium">Page #</span>
-          </button>
-
+            <button
+              className={`flex flex-col items-center justify-center gap-1 min-w-[64px] h-[52px] px-2 rounded-lg cursor-pointer border border-transparent transition-all active:scale-[0.98] shrink-0 ${showPageNumbers ? '!text-brand-600 dark:!text-brand-400 !bg-brand-50 dark:!bg-brand-500/10 shadow-inner' : 'bg-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'}`}
+              onClick={onTogglePageNumbers}
+              title="Toggle Page Numbers"
+            >
+              <IconHash />
+              <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">Page #</span>
+            </button>
+          </div>
 
         </div>
 

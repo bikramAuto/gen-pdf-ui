@@ -21,6 +21,20 @@ export interface DocumentResponse {
   id: string | null;
 }
 
+export interface AssetUsed {
+  assetId: string;
+  hash: string;
+  path: string;
+}
+
+export interface SaveDocumentResponse {
+  docId: string;
+  version: number;
+  docPath?: string;
+  assetsUsed?: AssetUsed[];
+  message?: string;
+}
+
 export interface SavedDocument {
   id: string;
   userId: string;
@@ -77,6 +91,31 @@ export const updateDocument = async (
   );
 };
 
+/**
+ * POST /documents
+ * Creates or updates a document using multipart/form-data.
+ *
+ * @param userId   - Owner of the document
+ * @param docId    - (Optional) Required for update
+ * @param formData - The multipart payload
+ */
+export const saveDocument = async (
+  userId: string,
+  docId: string | null,
+  formData: FormData,
+  options: RequestOptions = {}
+): Promise<SaveDocumentResponse> => {
+  let url = `/documents?userId=${userId}`;
+  if (docId) {
+    url += `&docId=${docId}`;
+  }
+  return apiClient<SaveDocumentResponse>(url, {
+    ...options,
+    method: 'POST',
+    body: formData,
+  });
+};
+
 export interface DocumentListItem {
   id: string;
   title: string;
@@ -90,12 +129,17 @@ export interface PaginatedDocuments {
 }
 
 export interface FullDocument extends SavedDocument {
+  assets?: Record<string, { url: string; base64?: string }>;
   template?: {
     id: string;
     name: string;
     userId: string;
     layout: Record<string, any>;
   };
+}
+
+export interface SingleDocumentResponse {
+  data: FullDocument;
 }
 
 /**
@@ -113,12 +157,12 @@ export const getDocuments = async (
   page: number = 1,
   limit: number = 10,
   options: RequestOptions = {}
-): Promise<PaginatedDocuments | FullDocument[]> => {
+): Promise<PaginatedDocuments | SingleDocumentResponse> => {
   let url = `/documents/getDoc/${userId}?page=${page}&limit=${limit}`;
   if (docId) {
     url += `&docId=${docId}`;
   }
-  return apiClient<PaginatedDocuments | FullDocument[]>(url, {
+  return apiClient<PaginatedDocuments | SingleDocumentResponse>(url, {
     ...options,
     method: 'GET',
   });

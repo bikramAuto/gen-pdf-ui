@@ -213,3 +213,38 @@ div.prose tr:nth-child(even) {
     line-height: 1.5 !important;
   }
 }
+
+/* Fix Monaco Tooltip / Hover / Overlay Widgets — render above all UI */
+
+/* The body-level overflow container created by fixedOverflowWidgets: true */
+body > .monaco-editor .overflowingContentWidgets,
+.overflowingContentWidgets {
+  z-index: 200000 !important;
+}
+
+/* All Monaco overlay & hover widgets */
+.monaco-editor .monaco-hover,
+.monaco-hover,
+.monaco-editor .monaco-hover-content,
+.monaco-editor .suggest-widget,
+.monaco-editor .parameter-hints-widget,
+.monaco-editor .editor-widget,
+.monaco-editor .find-widget {
+  z-index: 200000 !important;
+}
+
+/* The shadow root host for Monaco hover */
+.monaco-hover-content {
+  z-index: 200000 !important;
+}
+
+/* Ensure the hover tooltip doesn't get clipped by editor overflow */
+.monaco-editor .overflow-guard {
+  z-index: auto !important;
+}
+
+/* Ensure the content widgets container is on top */
+.monaco-editor .contentWidgets,
+.monaco-editor .overlayWidgets {
+  z-index: 200000 !important;
+}

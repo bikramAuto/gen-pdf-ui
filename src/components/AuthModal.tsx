@@ -17,6 +17,7 @@ export default function AuthModal({ isOpen, onClose, initialMode, onAuthSuccess 
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   const { login: socialLogin, isLoading: isSocialLoading } = useSocialAuth(onAuthSuccess, onClose)
 
@@ -162,14 +163,26 @@ export default function AuthModal({ isOpen, onClose, initialMode, onAuthSuccess 
             <div className="relative group">
               <div className="absolute top-2 left-5 text-[10px] font-medium text-zinc-400 dark:text-zinc-500 pointer-events-none z-10">Password</div>
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 disabled={isAnyLoading}
-                className="w-full bg-white dark:bg-[#181A1F] border border-zinc-200/80 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[14px] font-medium placeholder-zinc-400 dark:placeholder-zinc-500 rounded-full h-[60px] pt-4 px-5 focus:border-brand-500/50 dark:focus:border-brand-500/50 transition-colors custom-input shadow-sm dark:shadow-none disabled:opacity-50"
+                className="w-full bg-white dark:bg-[#181A1F] border border-zinc-200/80 dark:border-zinc-800/50 outline-none text-zinc-900 dark:text-white text-[14px] font-medium placeholder-zinc-400 dark:placeholder-zinc-500 rounded-full h-[60px] pt-4 pl-5 pr-24 focus:border-brand-500/50 dark:focus:border-brand-500/50 transition-colors custom-input shadow-sm dark:shadow-none disabled:opacity-50"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-[62px] top-[6px] bottom-[6px] w-[36px] flex items-center justify-center text-zinc-400 hover:text-brand-500 dark:text-zinc-500 dark:hover:text-brand-400 transition-colors focus:outline-none z-20"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                )}
+              </button>
               <button
                 type="submit"
                 disabled={isAnyLoading}

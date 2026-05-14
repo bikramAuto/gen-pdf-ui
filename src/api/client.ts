@@ -19,7 +19,9 @@ export const apiClient = async <T>(path: string, options: RequestOptions = {}): 
     const url = cleanApiUrl.startsWith('http') ? `${cleanApiUrl}${cleanPath}` : `${cleanApiUrl}${cleanPath}`;
 
     const requestHeaders = new Headers();
-    requestHeaders.set('Content-Type', 'application/json');
+    if (!(options.body instanceof FormData)) {
+      requestHeaders.set('Content-Type', 'application/json');
+    }
 
     // 1. Get Authentication Token (raw JWT, no prefix)
     const token = localStorage.getItem('token');
@@ -27,6 +29,15 @@ export const apiClient = async <T>(path: string, options: RequestOptions = {}): 
     if (token) {
       requestHeaders.set('Authorization', token);
     }
+
+    // Apply Custom Headers from Options (can override defaults if provided)
+    if (options.headers) {
+      Object.entries(options.headers as Record<string, string>).forEach(([key, value]) => {
+        requestHeaders.set(key, value);
+      });
+    }
+
+    const actualAuthToken = requestHeaders.get('Authorization') || '';
 
     // 2. Add DPoP Proof (x-auth-token only)
     const keyPair = dpopManager.getKeyPair();
@@ -36,18 +47,11 @@ export const apiClient = async <T>(path: string, options: RequestOptions = {}): 
       try {
         generatedHtu = cleanPath;
 
-        const proof = await createDpopProof(keyPair.privateKey, generatedHtu, options.method || 'GET', token || '');
+        const proof = await createDpopProof(keyPair.privateKey, generatedHtu, options.method || 'GET', actualAuthToken);
         requestHeaders.set('x-auth-token', proof);
       } catch (err) {
         console.error('[DPoP] Proof generation failed:', err);
       }
-    }
-
-    // 4. Apply Custom Headers from Options (can override defaults if provided)
-    if (options.headers) {
-      Object.entries(options.headers as Record<string, string>).forEach(([key, value]) => {
-        requestHeaders.set(key, value);
-      });
     }
 
     // 🔬 DEBUG: Log precisely what's being sent
@@ -99,7 +103,7 @@ export const apiClient = async <T>(path: string, options: RequestOptions = {}): 
               const keyPair = dpopManager.getKeyPair();
               if (keyPair) {
                 try {
-                  const proof = await createDpopProof(keyPair.privateKey, cleanApiUrl, 'GET', refreshToken);
+                  const proof = await createDpopProof(keyPair.privateKey, cleanApiUrl, 'PUT', refreshToken);
                   refreshHeaders['x-auth-token'] = proof;
                 } catch (e) {
                   console.error('[DPoP] Proof generation failed for refresh:', e);

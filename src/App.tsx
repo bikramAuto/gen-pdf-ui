@@ -6,11 +6,12 @@ import Preview from './components/Preview'
 import StatusBar from './components/StatusBar'
 import AuthModal from './components/AuthModal'
 import SetPassword from './components/SetPassword'
+import FormattingToolbar from './components/FormattingToolbar'
 import { ToastContainer, useToast } from './components/Toast'
 import { User } from './api/users'
 import { createTemplate, updateTemplate, getTemplates, getTemplateById, SavedTemplate, TemplatePayload, TemplateListItem } from './api/templates'
-import { createDocument, updateDocument, STATUS, DocumentPayload, getDocuments, DocumentListItem, FullDocument } from './api/documents'
-import { compressImage, storeImage, deleteImage, getAllHashes } from './utils/imageStorage'
+import { createDocument, updateDocument, STATUS, DocumentPayload, getDocuments, DocumentListItem, FullDocument, saveDocument, PaginatedDocuments, SingleDocumentResponse } from './api/documents'
+import { compressImage, storeImage, deleteImage, getAllHashes, storeAsset, getAssetUrl, getAssetBlob } from './utils/imageStorage'
 import { PDFConfig, PDFFormat, PDFOrientation } from './types/pdf'
 import { printPDF } from './utils/pdfUtils'
 import Modal from './components/ui/Modal'
@@ -138,6 +139,94 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
     if (documentId) localStorage.setItem('documentId', documentId)
     else localStorage.removeItem('documentId')
   }, [documentId])
+
+  // Assets Management
+  const [pendingAssets, setPendingAssets] = useState<Map<string, File>>(new Map())
+  const [assetMappings, setAssetMappings] = useState<Map<string, string>>(() => {
+    const saved = localStorage.getItem('assetMappings')
+    return saved ? new Map(Object.entries(JSON.parse(saved))) : new Map()
+  })
+
+  useEffect(() => {
+    localStorage.setItem('assetMappings', JSON.stringify(Object.fromEntries(assetMappings)))
+  }, [assetMappings])
+
+  const updateAssetMappings = useCallback((newMappings: Record<string, any>) => {
+    setAssetMappings(prev => {
+      const next = new Map(prev);
+      Object.entries(newMappings).forEach(([id, data]) => {
+        let newValue: string | undefined;
+        if (typeof data === 'string') {
+          newValue = data;
+        } else if (data && typeof data === 'object') {
+          newValue = data.base64 || data.url || (data.path ? `${import.meta.env.VITE_API_BASE_URL}/${data.path}` : undefined);
+        }
+
+        if (!newValue) return;
+
+        const currentValue = next.get(id);
+        const isNewReliable = newValue.startsWith('data:') || newValue.startsWith('blob:');
+        const isCurrentReliable = currentValue?.startsWith('data:') || currentValue?.startsWith('blob:');
+
+        // Fix for server returning wrong mime type for WebP images (which happens when SVG was rasterized before upload)
+        // WebP base64 strings always start with 'UklGR' (RIFF magic number)
+        if (newValue && newValue.startsWith('data:') && newValue.includes(';base64,UklGR')) {
+          newValue = newValue.replace(/^data:[^;]+;base64,/, 'data:image/webp;base64,');
+        }
+
+        // Rule: Only overwrite a reliable source (Base64/Blob) if the new one is also reliable
+        if (isCurrentReliable && !isNewReliable) return;
+
+        next.set(id, newValue);
+      });
+      return next;
+    });
+  }, []);
+
+  // Asset Recovery: Load Blobs from IndexedDB on mount for any asset:// in markdown
+  useEffect(() => {
+    const recoverAssets = async () => {
+      const assetRegex = /asset:\/\/([a-zA-Z0-9-]+)/g;
+      const matches = [...content.matchAll(assetRegex)];
+      const assetIds = [...new Set(matches.map(m => m[1]))];
+
+      const newMappings = new Map(assetMappings);
+      let changed = false;
+
+      for (const id of assetIds) {
+        if (!assetMappings.has(id)) {
+          const url = await getAssetUrl(id);
+          if (url) {
+            newMappings.set(id, url);
+            changed = true;
+          }
+        }
+      }
+
+      if (changed) {
+        setAssetMappings(newMappings);
+      }
+
+      // Also recover pending assets for upload
+      const newPending = new Map(pendingAssets);
+      let pendingChanged = false;
+      for (const id of assetIds) {
+        if (!pendingAssets.has(id)) {
+          const blob = await getAssetBlob(id);
+          if (blob) {
+            const file = new File([blob], `recovered-${id}.webp`, { type: 'image/webp' });
+            newPending.set(id, file);
+            pendingChanged = true;
+          }
+        }
+      }
+      if (pendingChanged) {
+        setPendingAssets(newPending);
+      }
+    };
+
+    recoverAssets();
+  }, []); // Only on mount
 
   // Doc Name Modal State (used for both New and Save)
   const [isDocNameModalOpen, setIsDocNameModalOpen] = useState(false)
@@ -270,39 +359,90 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
     imageInputRef.current?.click()
   }, [])
 
-  const handleImageSelected = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
+  const processAndInsertImage = useCallback(async (file: File, targetPosition?: { lineNumber: number, column: number } | null) => {
     try {
-      // New pipeline: Compress -> Hash -> Store in IndexedDB
-      const compressedBlob = await compressImage(file);
-      const hash = await storeImage(compressedBlob);
-      const imgMarkdown = `![${file.name}](${hash})`;
+      // SVGs are vector graphics; rasterizing them to WebP ruins quality and causes MIME type mismatches.
+      let finalBlob: Blob = file;
+      if (!file.type.includes('svg')) {
+        finalBlob = await compressImage(file);
+      }
+      
+      const uuid = typeof crypto.randomUUID === 'function' 
+        ? crypto.randomUUID() 
+        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+          });
+      
+      const assetId = `img-${uuid}`;
+      const assetFile = new File([finalBlob], file.name, { type: finalBlob.type });
+      
+      // Store in IndexedDB for persistence
+      await storeAsset(assetId, finalBlob);
+      
+      // Record as pending
+      setPendingAssets(prev => {
+        const next = new Map(prev);
+        next.set(assetId, assetFile);
+        return next;
+      });
+
+      // Map to local URL for immediate preview
+      const localUrl = URL.createObjectURL(assetFile);
+      setAssetMappings(prev => {
+        const next = new Map(prev);
+        next.set(assetId, localUrl);
+        return next;
+      });
+
+      const imgMarkdown = `![${file.name}](asset://${assetId})`;
 
       if (editorRef.current) {
-        const editor = editorRef.current
-        const selection = editor.getSelection()
-        const range = {
-          startLineNumber: selection.startLineNumber,
-          startColumn: selection.startColumn,
-          endLineNumber: selection.endLineNumber,
-          endColumn: selection.endColumn
+        const editor = editorRef.current;
+        let range: any;
+        
+        if (targetPosition) {
+           range = {
+             startLineNumber: targetPosition.lineNumber,
+             startColumn: targetPosition.column,
+             endLineNumber: targetPosition.lineNumber,
+             endColumn: targetPosition.column
+           };
+        } else {
+           const selection = editor.getSelection();
+           if (selection) {
+             range = {
+               startLineNumber: selection.startLineNumber,
+               startColumn: selection.startColumn,
+               endLineNumber: selection.endLineNumber,
+               endColumn: selection.endColumn
+             };
+           }
         }
-        editor.executeEdits('insert-image', [
-          { range, text: imgMarkdown, forceMoveMarkers: true }
-        ])
+
+        if (range) {
+          editor.executeEdits('insert-image', [
+            { range, text: imgMarkdown, forceMoveMarkers: true }
+          ]);
+        }
       } else {
-        setContent(prev => prev + '\n' + imgMarkdown + '\n')
+        setContent(prev => prev + '\n' + imgMarkdown + '\n');
       }
-      setIsDirty(true)
+      setIsDirty(true);
     } catch (err) {
       console.error('Image processing failed:', err);
     }
+  }, []);
 
+  const handleImageSelected = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    await processAndInsertImage(file);
+    
     // Reset input so the same file can be re-selected
-    e.target.value = ''
-  }, [])
+    e.target.value = '';
+  }, [processAndInsertImage]);
 
   const handleHeaderBannerSelected = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -422,21 +562,46 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
           }
         }
 
-        const docPayload: DocumentPayload = {
-          userId: user.id,
-          title: trimmed,
-          content: content,
-          layoutId: activeTemplateId || '', // reference the current active template
-          status: STATUS.DRAFT,
+        // Prepare FormData for the new saveDocument API
+        const formData = new FormData();
+        formData.append('content.title', trimmed);
+        formData.append('content.docs', content);
+        if (activeTemplateId) {
+          formData.append('content.layoutId', activeTemplateId);
         }
 
-        // If snapshot, ALWAYS create new. Otherwise, update if documentId exists.
-        if (documentId && action === 'save') {
-          await updateDocument(user.id, documentId, docPayload)
-        } else {
-          const docRes = await createDocument(user.id, docPayload)
-          if (docRes.id) setDocumentId(docRes.id)
+        // Extract assetIds from markdown and attach pending files
+        const assetRegex = /asset:\/\/([a-zA-Z0-9-]+)/g;
+        const matches = [...content.matchAll(assetRegex)];
+        const usedAssetIds = [...new Set(matches.map(m => m[1]))];
+
+        usedAssetIds.forEach(id => {
+          const file = pendingAssets.get(id);
+          if (file) {
+            formData.append('assetIds', id);
+            formData.append('files', file);
+          }
+        });
+
+        const res = await saveDocument(user.id, (action === 'save') ? documentId : null, formData);
+        
+        if (res.docId) setDocumentId(res.docId);
+
+        // Update mappings with server-provided paths using smart helper
+        if (res.assetsUsed) {
+          const mappingUpdate: Record<string, any> = {};
+          res.assetsUsed.forEach(asset => {
+            mappingUpdate[asset.assetId] = asset;
+          });
+          updateAssetMappings(mappingUpdate);
         }
+
+        // Cleanup: remove from pending now that they are uploaded
+        setPendingAssets(prev => {
+          const next = new Map(prev);
+          usedAssetIds.forEach(id => next.delete(id));
+          return next;
+        });
 
         setIsDirty(false)
         showToast(action === 'snapshot' ? 'Document saved as new snapshot!' : 'Document synced!', 'success')
@@ -447,7 +612,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
         setIsSaving(false)
       }
     }
-  }, [pendingDocAction, user, templateId, documentId, content, buildTemplateLayout, showToast])
+  }, [pendingDocAction, user, templateId, documentId, content, pendingAssets, buildTemplateLayout, showToast])
 
   const handleRenameDocument = useCallback(async (newName: string) => {
     const trimmed = newName.trim()
@@ -457,20 +622,40 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
 
     if (user && documentId) {
       try {
-        const docPayload: DocumentPayload = {
-          userId: user.id,
-          title: trimmed,
-          content: content,
-          layoutId: templateId || '',
-          status: STATUS.DRAFT,
+        const formData = new FormData();
+        formData.append('content.title', trimmed);
+        formData.append('content.docs', content);
+        if (templateId) {
+          formData.append('content.layoutId', templateId);
         }
-        await updateDocument(user.id, documentId, docPayload)
+
+        // Extract and attach assets even during rename just in case
+        const assetRegex = /asset:\/\/([a-zA-Z0-9-]+)/g;
+        const matches = [...content.matchAll(assetRegex)];
+        const usedAssetIds = [...new Set(matches.map(m => m[1]))];
+
+        usedAssetIds.forEach(id => {
+          const file = pendingAssets.get(id);
+          if (file) {
+            formData.append('assetIds', id);
+            formData.append('files', file);
+          }
+        });
+
+        const res = await saveDocument(user.id, documentId, formData)
+        if (res.assetsUsed) {
+          const mappingUpdate: Record<string, any> = {};
+          res.assetsUsed.forEach(asset => {
+            mappingUpdate[asset.assetId] = asset;
+          });
+          updateAssetMappings(mappingUpdate);
+        }
         showToast('Document renamed!', 'success')
       } catch (err) {
         console.error('Rename failed:', err)
       }
     }
-  }, [user, documentId, content, templateId, showToast])
+  }, [user, documentId, content, pendingAssets, showToast])
 
   const handleSaveDocument = useCallback(async () => {
     if (!user) return
@@ -535,16 +720,13 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
     setIsDocsModalOpen(true)
     setIsLoadingDocs(true)
     try {
-      const result = await getDocuments(user.id, undefined, page, DOC_LIMIT)
-      const docs = Array.isArray(result) ? result : (result?.data || [])
+      const response = await getDocuments(user.id, undefined, page, DOC_LIMIT)
+      const result = response as PaginatedDocuments
+      const docs = result.data || []
       setSavedDocs(docs as DocumentListItem[])
       setDocPage(page)
-      if (!Array.isArray(result)) {
-        setDocTotal(result.total || 0)
-        setDocHasMore(page * DOC_LIMIT < result.total)
-      } else {
-        setDocHasMore(result.length === DOC_LIMIT)
-      }
+      setDocTotal(result.total || 0)
+      setDocHasMore(page * DOC_LIMIT < (result.total || 0))
     } catch (err) {
       console.error('Failed to fetch documents:', err)
       setSavedDocs([])
@@ -556,8 +738,9 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
   const handleLoadDocument = useCallback(async (doc: DocumentListItem) => {
     if (!user) return
     try {
-      const result = await getDocuments(user.id, doc.id)
-      const fullDoc = (Array.isArray(result) ? result[0] : result.data?.[0]) as FullDocument
+      const response = await getDocuments(user.id, doc.id)
+      const result = response as SingleDocumentResponse
+      const fullDoc = result.data
       if (!fullDoc) return
 
       // Load Document Data
@@ -565,6 +748,11 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
       setFileName(fullDoc.title || 'Untitled.md')
       setDocumentId(fullDoc.id)
       setIsDirty(false)
+
+      // Load Assets Mapping if available (Use smart helper to prioritize Base64/reliable sources)
+      if (fullDoc.assets) {
+        updateAssetMappings(fullDoc.assets);
+      }
 
       // Load Linked Template Data if available
       if (fullDoc.template) {
@@ -867,6 +1055,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
 
 
         <div className="print:hidden">
+          <FormattingToolbar editorRef={editorRef} />
           <Toolbar
             theme={theme}
             isDirty={isDirty}
@@ -906,12 +1095,12 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
             onOpenDocuments={handleOpenDocuments}
             onOpenLayout={() => setIsLayoutModalOpen(true)}
             onRename={handleRenameDocument}
-            onGoToHome={onGoToHome || (() => {})}
+            onGoToHome={onGoToHome || (() => { })}
           />
         </div>
         <div
           ref={containerRef}
-          className="flex flex-1 overflow-hidden relative print:overflow-visible print:block print:h-auto print:w-full"
+          className="flex flex-1 overflow-hidden relative z-[10] print:overflow-visible print:block print:h-auto print:w-full"
         >
           <div
             className={`print:hidden flex flex-col h-full bg-white dark:bg-[#16181d] shadow-sm relative z-[1] transition-transform duration-300 md:transition-none md:translate-x-0 absolute md:relative w-full md:w-auto ${isEditorCollapsed ? 'md:hidden' : ''}`}
@@ -933,7 +1122,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
               onMount={(editor) => {
                 editorRef.current = editor
 
-                // Add paste listener for images
+                // Add paste and drag/drop listeners for images
                 const container = editor.getDomNode();
                 if (container) {
                   const onPaste = async (e: ClipboardEvent) => {
@@ -957,33 +1146,51 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
                         if (item.type.startsWith('image/')) {
                           const file = item.getAsFile();
                           if (file) {
-                            try {
-                              const compressed = await compressImage(file);
-                              const hash = await storeImage(compressed);
-                              const markdown = `![pasted-image](${hash})`;
-
-                              // Ensure editor/model still exists before attempting to edit
-                              if (editor && editor.getModel()) {
-                                const selection = editor.getSelection();
-                                editor.executeEdits('paste-image', [{
-                                  range: selection,
-                                  text: markdown,
-                                  forceMoveMarkers: true
-                                }]);
-                                setIsDirty(true);
-                              }
-                            } catch (err) {
-                              console.error('Paste image failed:', err);
-                            }
+                            await processAndInsertImage(file);
                           }
                         }
                       }
                     }
                   };
+                  
+                  const onDragOver = (e: DragEvent) => {
+                    // Check if dragging files
+                    if (e.dataTransfer && e.dataTransfer.types.includes('Files')) {
+                       e.preventDefault();
+                       e.dataTransfer.dropEffect = 'copy';
+                    }
+                  };
+                  
+                  const onDrop = async (e: DragEvent) => {
+                    const items = e.dataTransfer?.files;
+                    if (!items || items.length === 0) return;
+                    
+                    let imageFile: File | null = null;
+                    for (let i = 0; i < items.length; i++) {
+                      if (items[i].type.startsWith('image/')) {
+                        imageFile = items[i];
+                        break;
+                      }
+                    }
+                    
+                    if (imageFile) {
+                      e.preventDefault();
+                      e.stopImmediatePropagation();
+                      
+                      // Calculate the exact position where the mouse cursor dropped the file
+                      const target = editor.getTargetAtClientPoint(e.clientX, e.clientY);
+                      await processAndInsertImage(imageFile, target?.position);
+                    }
+                  };
 
                   container.addEventListener('paste', onPaste);
+                  container.addEventListener('dragover', onDragOver);
+                  container.addEventListener('drop', onDrop);
+                  
                   editor.onDidDispose(() => {
                     container.removeEventListener('paste', onPaste);
+                    container.removeEventListener('dragover', onDragOver);
+                    container.removeEventListener('drop', onDrop);
                   });
                 }
               }}
@@ -1015,6 +1222,7 @@ export default function App({ onGoToHome, theme, onToggleTheme }: { onGoToHome?:
               showPageNumbers={showPageNumbers}
               headerBanner={headerBanner}
               footerBanner={footerBanner}
+              assetMappings={assetMappings}
             />
           </div>
         </div>

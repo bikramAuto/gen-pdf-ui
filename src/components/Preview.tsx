@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useRef, useState } from 'react'
-import { marked } from 'marked'
+import { marked, Renderer } from 'marked'
 import DOMPurify from 'dompurify'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
@@ -17,6 +17,7 @@ interface PreviewProps {
   showPageNumbers: boolean
   headerBanner?: string
   footerBanner?: string
+  assetMappings: Map<string, string>
 }
 
 // ==highlight== extension
@@ -67,6 +68,50 @@ const superscriptExtension = {
   }
 }
 
+// ::space[40] spacing extension
+const spacingExtension = {
+  name: 'spacing',
+  level: 'block' as const,
+  start(src: string) { return src.indexOf('::space['); },
+  tokenizer(src: string) {
+    const match = src.match(/^::space\[(\d+)\][ \t]*(?:\n|$)/);
+    if (match) {
+      return {
+        type: 'spacing',
+        raw: match[0],
+        height: parseInt(match[1], 10)
+      };
+    }
+  },
+  renderer(token: any) {
+    return `<div style="height: ${token.height}px;" aria-hidden="true"></div>\n`;
+  }
+};
+
+// ::center ... :: and ::right ... :: alignment extension
+const alignmentExtension = {
+  name: 'alignment',
+  level: 'block' as const,
+  start(src: string) { return src.indexOf('::'); },
+  tokenizer(this: any, src: string) {
+    const match = src.match(/^::(center|right)(?:\s+|\n)([\s\S]*?)(?:\s+|\n)::[ \t]*(?:\n|$)/);
+    if (match) {
+      const token = {
+        type: 'alignment',
+        raw: match[0],
+        align: match[1],
+        text: match[2],
+        tokens: []
+      };
+      this.lexer.blockTokens(token.text, token.tokens);
+      return token;
+    }
+  },
+  renderer(this: any, token: any) {
+    return `<div style="text-align: ${token.align};">\n${this.parser.parse(token.tokens)}</div>\n`;
+  }
+};
+
 // Configure marked globally with extensions
 marked.setOptions({
   gfm: true,
@@ -75,10 +120,10 @@ marked.setOptions({
 
 marked.use(
   createFootnotes(),
-  { extensions: [highlightExtension, subscriptExtension, superscriptExtension] }
+  { extensions: [highlightExtension, subscriptExtension, superscriptExtension, spacingExtension, alignmentExtension] }
 )
 
-export default function Preview({ content, pdfConfig, showPDFTimestamp, showPageNumbers, headerBanner, footerBanner }: PreviewProps) {
+export default function Preview({ content, pdfConfig, showPDFTimestamp, showPageNumbers, headerBanner, footerBanner, assetMappings }: PreviewProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const hiddenMeasureRef = useRef<HTMLDivElement>(null)
@@ -128,24 +173,50 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
   // Parse markdown → sanitized HTML
   const fullHtml = useMemo(() => {
     // Configure marked with a custom renderer for images
-    const renderer = new marked.Renderer();
-
-    // Support highlight.js in code blocks
-    renderer.code = (code: string, lang: string | undefined) => {
-      const language = lang && hljs.getLanguage(lang) ? lang : 'plaintext';
-      const highlighted = hljs.highlight(code, { language }).value;
+    const renderer = new Renderer();
+    // Support highlight.js in code blocks (Supports both old and new Marked signatures)
+    renderer.code = (textOrToken: any, langOrOptions?: any) => {
+      const text = typeof textOrToken === 'string' ? textOrToken : (textOrToken.text || '');
+      const language = (typeof textOrToken === 'string' ? langOrOptions : textOrToken.lang) || 'plaintext';
+      
+      const highlighted = hljs.highlight(text, { language: hljs.getLanguage(language) ? language : 'plaintext' }).value;
       return `<pre><code class="hljs language-${language}">${highlighted}</code></pre>`;
     };
 
-    renderer.image = (href: string, title: string | null, text: string) => {
-      // If href is a hash that we've resolved, use the Blob URL
+    // Support images with asset mapping (Supports both old and new Marked signatures)
+    renderer.image = (hrefOrToken: any, title?: string | null, text?: string) => {
+      let href = typeof hrefOrToken === 'string' ? hrefOrToken : hrefOrToken.href;
+      let t = typeof hrefOrToken === 'string' ? title : hrefOrToken.title;
+      let txt = typeof hrefOrToken === 'string' ? text : hrefOrToken.text;
+
+      if (!href) return '';
+
+      // 1. Check if it's an asset:// link
+      if (href.startsWith('asset://')) {
+        const assetId = href.replace('asset://', '');
+        const mappedUrl = assetMappings.get(assetId);
+        return `<img src="${mappedUrl || href}" alt="${txt || ''}" ${t ? `title="${t}"` : ''} data-asset-id="${assetId}" />`;
+      }
+
+      // 2. Fallback for legacy hash-based images
       const actualUrl = hashToUrl[href] || href;
-      return `<img src="${actualUrl}" alt="${text}" ${title ? `title="${title}"` : ''} data-hash="${href}" />`;
+      return `<img src="${actualUrl}" alt="${txt || ''}" ${t ? `title="${t}"` : ''} data-hash="${href}" />`;
     };
 
     const raw = marked.parse(content, { renderer, async: false }) as string;
 
-    return DOMPurify.sanitize(raw, {
+    // Use a hook to explicitly allow data:image/, blob:, and asset:// URIs to avoid being stripped
+    DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
+      const tagName = node.tagName.toUpperCase();
+      if (data.attrName === 'src' && (tagName === 'IMG' || tagName === 'IMAGE')) {
+        const val = data.attrValue;
+        if (val.startsWith('data:image/') || val.startsWith('blob:') || val.startsWith('asset://')) {
+          ;(data as any).forceKeepAttr = true;
+        }
+      }
+    });
+
+    const output = DOMPurify.sanitize(raw, {
       ALLOWED_TAGS: [
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
         'p', 'br', 'hr',
@@ -162,7 +233,7 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
         'input', 'label',
       ],
       ALLOWED_ATTR: [
-        'href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel', 'align', 'style', 'data-hash',
+        'href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel', 'align', 'style', 'data-hash', 'data-asset-id',
         'width', 'height', 'controls', 'autoplay', 'loop', 'muted', 'poster', 'preload',
         'type', 'checked', 'disabled', 'readonly', 'value', 'name', 'for',
         'datetime', 'colspan', 'rowspan', 'scope', 'open', 'role', 'aria-label',
@@ -171,9 +242,14 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
       ],
       ADD_ATTR: ['target'],
       FORBID_TAGS: ['style', 'script'],
-      ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp|blob):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+      ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp|blob|data|asset):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
     }) as string;
-  }, [content, hashToUrl])
+
+    // Remove hook to prevent global side effects
+    DOMPurify.removeHook('uponSanitizeAttribute');
+    
+    return output;
+  }, [content, hashToUrl, assetMappings])
 
   // Auto-Pagination: await fonts (#3) and images (#12) before measuring
   useEffect(() => {
@@ -336,6 +412,11 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
               pageBreakAfter: index < pagesToRender.length - 1 ? 'always' : 'auto'
             }}
           >
+            {showPDFTimestamp && (
+              <div className="absolute top-2 left-4 text-[10px] text-gray-400 font-mono z-10">
+                {new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+            )}
             {headerBanner && (
               <div
                 className="w-full mb-4 overflow-hidden"
@@ -348,13 +429,8 @@ export default function Preview({ content, pdfConfig, showPDFTimestamp, showPage
                 dangerouslySetInnerHTML={{ __html: pdfConfig.headerText }}
               />
             )}
-            {showPDFTimestamp && (
-              <div className="absolute top-4 left-4 text-[10px] text-gray-400 font-mono z-10">
-                {new Date().toLocaleDateString('en-GB') + ', ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-              </div>
-            )}
             {/* Content Container */}
-            <div className="relative pt-6 pb-20" dangerouslySetInnerHTML={{ __html: pageHtml }} />
+            <div className="relative pt-0 pb-20" dangerouslySetInnerHTML={{ __html: pageHtml }} />
 
             {footerBanner && (
               <div

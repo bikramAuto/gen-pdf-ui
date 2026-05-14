@@ -49,6 +49,7 @@ export default function Editor({ value, onChange, theme, onMount }: EditorProps)
           bracketPairColorization: { enabled: true },
           suggest: { showWords: false },
           quickSuggestions: false,
+          fixedOverflowWidgets: true,
         }}
       />
     </div>

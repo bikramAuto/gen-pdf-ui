@@ -460,6 +460,39 @@ ___`,
             </div>
           </div>
         )
+      },
+      {
+        label: 'Spacing',
+        syntax: `::space[40]`,
+        rendered: (
+          <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800">
+            <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 9l4-4 4 4m0 6l-4 4-4-4" /></svg>
+            <div>
+               <p className="font-bold text-sm text-blue-700 dark:text-blue-300">Vertical Spacing</p>
+               <p className="text-xs text-blue-500/70 dark:text-blue-400/50 mt-0.5">Creates vertical empty space defined in pixels (e.g., 40px).</p>
+            </div>
+          </div>
+        )
+      },
+      {
+        label: 'Block Alignment',
+        syntax: `::center
+Centered text or blocks
+::
+
+::right
+Right-aligned text or blocks
+::`,
+        rendered: (
+          <div className="space-y-4">
+             <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-center">
+                 <p className="font-medium text-sm text-zinc-700 dark:text-zinc-300">Centered text or blocks</p>
+             </div>
+             <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-right">
+                 <p className="font-medium text-sm text-zinc-700 dark:text-zinc-300">Right-aligned text or blocks</p>
+             </div>
+          </div>
+        )
       }
     ]
   }
@@ -598,6 +631,8 @@ export default function MarkdownGuide({
                   { syntax: '[^1]', desc: 'Footnote' },
                   { syntax: 'H~2~O', desc: 'Subscript' },
                   { syntax: '---', desc: 'Rule' },
+                  { syntax: '::space[40]', desc: 'Spacing' },
+                  { syntax: '::center ::', desc: 'Alignment' },
                 ].map((item) => (
                   <div key={item.syntax} className="flex items-center gap-2 px-2.5 py-2 rounded-xl bg-white/60 dark:bg-zinc-900/40 backdrop-blur-sm group/item hover:bg-white dark:hover:bg-zinc-900 transition-all duration-300 border border-transparent hover:border-brand-100 dark:hover:border-brand-900">
                     <code className="text-[10px] font-mono font-bold text-brand-600 dark:text-brand-400 bg-white dark:bg-zinc-950 px-1.5 py-0.5 rounded border border-brand-100 dark:border-brand-800/50 shrink-0 group-hover/item:border-brand-300 dark:group-hover/item:border-brand-500 transition-colors">

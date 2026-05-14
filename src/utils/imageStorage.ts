@@ -142,3 +142,37 @@ export async function getAllHashes(): Promise<string[]> {
     request.onerror = () => reject(request.error);
   });
 }
+export async function storeAsset(assetId: string, blob: Blob): Promise<void> {
+  const database = await getDB();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(STORE_NAME, 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.put(blob, assetId);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function getAssetBlob(assetId: string): Promise<Blob | null> {
+  const database = await getDB();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(STORE_NAME, 'readonly');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.get(assetId);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+const assetUrlCache = new Map<string, string>();
+
+export async function getAssetUrl(assetId: string): Promise<string | null> {
+  if (assetUrlCache.has(assetId)) return assetUrlCache.get(assetId)!;
+
+  const blob = await getAssetBlob(assetId);
+  if (!blob) return null;
+
+  const url = URL.createObjectURL(blob);
+  assetUrlCache.set(assetId, url);
+  return url;
+}

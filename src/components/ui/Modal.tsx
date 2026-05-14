@@ -35,7 +35,7 @@ export default function Modal({
           {/* Close button */}
           <button 
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-full text-zinc-400 hover:text-brand-600 dark:text-zinc-500 dark:hover:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors z-[60]"
+            className="absolute top-4 right-4 p-1.5 rounded-full text-zinc-400 hover:text-brand-600 dark:text-zinc-500 dark:hover:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-500/10 transition-colors"
             title="Close"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
